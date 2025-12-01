@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace PracticalWork.Library.Cache.Redis.Helpers
+namespace PracticalWork.Library.Helpers
 {
     /// <summary>
     /// Вспомогательный класс для формирования ключей

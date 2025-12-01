@@ -30,7 +30,9 @@ public interface IBookService
     /// <returns></returns>
     Task<PaginationResponseBase<Book>> GetBooks(GetBooksRequestModel requestModel);
     
-    
+    /// <summary>
+    /// Обновить детали книги (описание и обложка)
+    /// </summary>
     Task UpdateBookDetails(Guid id, string description, UploadedFile coverFile);
 
 }

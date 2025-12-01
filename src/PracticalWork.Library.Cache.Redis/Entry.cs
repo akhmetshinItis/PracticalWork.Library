@@ -1,5 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PracticalWork.Library.Abstractions.Services;
+using PracticalWork.Library.Cache.Redis.Services;
+using PracticalWork.Library.Options;
+using StackExchange.Redis;
 
 namespace PracticalWork.Library.Cache.Redis;
 
@@ -13,7 +17,34 @@ public static class Entry
         var connectionString = configuration["App:Redis:RedisCacheConnection"];
         var prefix = configuration["App:Redis:RedisCachePrefix"];
 
-        // Реализация подключения к Redis и сервисов
+        // Регистрация IConnectionMultiplexer для StackExchange.Redis
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            serviceCollection.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                return ConnectionMultiplexer.Connect(connectionString);
+            });
+        }
+
+        // Регистрация IDistributedCache
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            serviceCollection.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = connectionString;
+                if (!string.IsNullOrWhiteSpace(prefix))
+                {
+                    options.InstanceName = prefix;
+                }
+            });
+        }
+
+        // Регистрация сервисов кеша
+        serviceCollection.AddScoped<ICacheService, CacheService>();
+        serviceCollection.AddScoped<ICacheVersionService, CacheVersionService>();
+
+        // Регистрация опций кеша для книг
+        serviceCollection.Configure<BooksCacheOptions>(configuration.GetSection("App:BooksCache"));
 
         return serviceCollection;
     }
