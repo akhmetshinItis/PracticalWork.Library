@@ -1,12 +1,17 @@
 ﻿using PracticalWork.Library.Enums;
 
-namespace PracticalWork.Library.Models;
+namespace PracticalWork.Library.Models.BookModels;
 
 /// <summary>
 /// Книга
 /// </summary>
 public sealed class Book
 {
+    /// <summary>
+    /// Идентификатор книги
+    /// </summary>
+    public Guid Id { get; set; }
+    
     /// <summary>Название книги</summary>
     public string Title { get; set; }
 
@@ -56,5 +61,14 @@ public sealed class Book
     {
         Description = description;
         CoverImagePath = coverImagePath;
+    }
+
+    public void Update(Book updatedBook)
+    {
+        Title = updatedBook.Title;
+        Description = updatedBook.Description;
+        Year = updatedBook.Year;
+        Authors = updatedBook.Authors;
+        CoverImagePath = updatedBook.CoverImagePath;
     }
 }

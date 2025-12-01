@@ -5,5 +5,15 @@ namespace PracticalWork.Library.Contracts.v1.Books.Request;
 /// <summary>
 /// Запрос на обновление книги
 /// </summary>
-public sealed record UpdateBookRequest(string Title, IReadOnlyList<string> Authors, string Description, int Year)
+public sealed record UpdateBookRequest(
+    string Title,
+    IReadOnlyList<string> Authors,
+    string Description,
+    int Year,
+    string CoverImagePath,
+    string CategoriesOfFiction,
+    string Subject,
+    string GradeLevel,
+    string ResearchField,
+    string Publisher)
     : AbstractBook(Title, Authors, Description, Year);
