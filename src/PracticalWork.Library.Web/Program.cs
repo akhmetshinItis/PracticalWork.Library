@@ -79,7 +79,7 @@ public class Program
         var ex = e.ExceptionObject as Exception;
         if (e.IsTerminating)
         {
-            SystemLogger.LogCritical(ex, "Service terminating with fatal exception");
+            SystemLogger.LogCritical(ex, "Services terminating with fatal exception");
             return;
         }
         SystemLogger.LogError(ex, "Unhandled exception in global handler");

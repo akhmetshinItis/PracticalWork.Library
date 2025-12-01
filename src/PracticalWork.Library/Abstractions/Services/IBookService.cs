@@ -1,5 +1,6 @@
-﻿using PracticalWork.Library.Models;
-using PracticalWork.Library.Models.BaseModels;
+﻿using PracticalWork.Library.DTO.BaseDtos;
+using PracticalWork.Library.DTO.BookDtos;
+using PracticalWork.Library.Models;
 using PracticalWork.Library.Models.BookModels;
 
 namespace PracticalWork.Library.Abstractions.Services;

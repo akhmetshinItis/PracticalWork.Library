@@ -1,7 +1,7 @@
+using PracticalWork.Library.DTO.BaseDtos;
 using PracticalWork.Library.Enums;
-using PracticalWork.Library.Models.BaseModels;
 
-namespace PracticalWork.Library.Models.BookModels
+namespace PracticalWork.Library.DTO.BookDtos
 {
     public class GetBooksRequestModel : PaginationRequestBase
     {

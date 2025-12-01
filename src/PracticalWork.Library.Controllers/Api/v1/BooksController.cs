@@ -5,7 +5,7 @@ using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Contracts.v1.Books.Request;
 using PracticalWork.Library.Contracts.v1.Books.Response;
 using PracticalWork.Library.Controllers.Mappers.v1;
-using PracticalWork.Library.Models.BaseModels;
+using PracticalWork.Library.DTO.BaseDtos;
 
 namespace PracticalWork.Library.Controllers.Api.v1;
 
@@ -65,14 +65,13 @@ public class BooksController(IBookService bookService) : Controller
     }
 
     /// <summary>
-    /// Получение списка книг с филтрами
+    /// Получение списка книг с фильтрами
     /// </summary>
     /// <param name="request"></param>
     /// <returns>Список книг</returns>
     [HttpGet]
     [Produces("application/json")]
     [ProducesResponseType(200)]
-    [ProducesResponseType(404)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
     public async Task<Contracts.v1.Abstracts.PaginationResponseBase<BookResponse>> GetBooksAsync([FromQuery] GetBooksRequest request)

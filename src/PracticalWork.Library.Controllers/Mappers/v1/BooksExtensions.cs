@@ -1,7 +1,8 @@
 ﻿using PracticalWork.Library.Contracts.v1.Books.Request;
 using PracticalWork.Library.Contracts.v1.Books.Response;
+using PracticalWork.Library.DTO.BaseDtos;
+using PracticalWork.Library.DTO.BookDtos;
 using PracticalWork.Library.Enums;
-using PracticalWork.Library.Models.BaseModels;
 using PracticalWork.Library.Models.BookModels;
 
 namespace PracticalWork.Library.Controllers.Mappers.v1;

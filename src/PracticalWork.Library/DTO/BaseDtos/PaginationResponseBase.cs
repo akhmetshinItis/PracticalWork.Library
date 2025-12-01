@@ -1,4 +1,4 @@
-namespace PracticalWork.Library.Models.BaseModels
+namespace PracticalWork.Library.DTO.BaseDtos
 {
     /// <summary>
     /// Базовый ответ с пагинацией

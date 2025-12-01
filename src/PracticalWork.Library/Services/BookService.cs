@@ -1,8 +1,9 @@
 ﻿using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Abstractions.Storage;
+using PracticalWork.Library.DTO.BaseDtos;
+using PracticalWork.Library.DTO.BookDtos;
 using PracticalWork.Library.Enums;
 using PracticalWork.Library.Exceptions;
-using PracticalWork.Library.Models.BaseModels;
 using PracticalWork.Library.Models.BookModels;
 
 namespace PracticalWork.Library.Services;

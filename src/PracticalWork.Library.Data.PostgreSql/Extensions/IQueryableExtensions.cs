@@ -1,4 +1,4 @@
-using PracticalWork.Library.Models.BaseModels;
+using PracticalWork.Library.DTO.BaseDtos;
 
 namespace PracticalWork.Library.Data.PostgreSql.Extensions
 {

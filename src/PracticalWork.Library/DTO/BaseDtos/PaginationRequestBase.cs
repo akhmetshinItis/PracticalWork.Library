@@ -1,6 +1,6 @@
 using PracticalWork.Library.Enums;
 
-namespace PracticalWork.Library.Models.BaseModels
+namespace PracticalWork.Library.DTO.BaseDtos
 {
     public class PaginationRequestBase
     {
