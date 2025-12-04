@@ -1,4 +1,5 @@
-﻿using PracticalWork.Library.DTO.BookDtos;
+﻿using PracticalWork.Library.DTO.BaseDtos;
+using PracticalWork.Library.DTO.BookDtos;
 using PracticalWork.Library.Models;
 using PracticalWork.Library.Models.BookModels;
 
@@ -34,4 +35,17 @@ public interface IBookRepository
     /// <param name="request">Запрос</param>
     /// <returns>Список книг</returns>
     Task<List<Book>> GetBooks(GetBooksRequestModel request);
+    /// <summary>
+    /// Получить не архивные книги с записями о выдаче
+    /// </summary>
+    /// <param name="request">объект пагинации</param>
+    /// <returns>список книг</returns>
+    Task<IReadOnlyList<Book>> GetNonArchivedBooksPageWithIssuanceRecords(
+        PaginationRequestBase request);
+    /// <summary>
+    /// Получить книгу по названию
+    /// </summary>
+    /// <param name="title">название книги</param>
+    /// <returns>идентификатор книги</returns>
+    Task<Guid> GetBookIdByTitle(string title);
 }

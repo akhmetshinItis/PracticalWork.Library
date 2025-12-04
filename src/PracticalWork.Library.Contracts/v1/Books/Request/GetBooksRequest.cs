@@ -7,13 +7,13 @@ namespace PracticalWork.Library.Contracts.v1.Books.Request
     {
         /// <summary>
         /// Статус
-        /// </summary>
-        public BookStatus Status { get; set; }
+        /// </summary>xxx
+        public BookStatus? Status { get; set; }
         
         /// <summary>
         /// Категория
         /// </summary>
-        public BookCategory Category { get; set; }
+        public BookCategory? Category { get; set; }
         
         /// <summary>
         /// Автор

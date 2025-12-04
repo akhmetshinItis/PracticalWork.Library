@@ -2,6 +2,7 @@
 using PracticalWork.Library.Abstractions.Storage;
 using PracticalWork.Library.Data.PostgreSql.Entities;
 using PracticalWork.Library.Data.PostgreSql.Extensions;
+using PracticalWork.Library.DTO.BaseDtos;
 using PracticalWork.Library.DTO.BookDtos;
 using PracticalWork.Library.Enums;
 using PracticalWork.Library.Exceptions;
@@ -41,7 +42,8 @@ public sealed class BookRepository : IBookRepository
         entity.Year = book.Year;
         entity.Authors = book.Authors;
         entity.Status = book.Status;
-
+        entity.Category = book.Category;
+        
         _appDbContext.Add(entity);
         await _appDbContext.SaveChangesAsync();
 
@@ -73,7 +75,30 @@ public sealed class BookRepository : IBookRepository
 
         return bookEntity.ToBook();
     }
-
+    
+    
+    /// <inheritdoc />
+    public async Task<Guid> GetBookIdByTitle(string title)
+    {
+        var bookEntity = await _appDbContext.Books
+            .FirstOrDefaultAsync(b => b.Title == title);
+        return bookEntity.Id;
+    }
+    
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<Book>> GetNonArchivedBooksPageWithIssuanceRecords(
+        PaginationRequestBase request)
+    {
+        var entities = _appDbContext.Books
+            .Where(b => b.Status != BookStatus.Archived)
+            .Include(b => b.IssuanceRecords)
+            .SkipTake(request)
+            .Select(e => e.ToBook());
+        
+        return await entities.ToListAsync();
+    }
+    
+    /// <inheritdoc />
     public async Task<List<Book>> GetBooks(GetBooksRequestModel request)
     {
         IQueryable<AbstractBookEntity> query = request.Category switch

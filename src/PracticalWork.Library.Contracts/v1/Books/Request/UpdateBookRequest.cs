@@ -1,4 +1,5 @@
 ﻿using PracticalWork.Library.Contracts.v1.Abstracts;
+using PracticalWork.Library.Contracts.v1.Enums;
 
 namespace PracticalWork.Library.Contracts.v1.Books.Request;
 
@@ -9,11 +10,5 @@ public sealed record UpdateBookRequest(
     string Title,
     IReadOnlyList<string> Authors,
     string Description,
-    int Year,
-    string CoverImagePath,
-    string CategoriesOfFiction,
-    string Subject,
-    string GradeLevel,
-    string ResearchField,
-    string Publisher)
+    int Year)
     : AbstractBook(Title, Authors, Description, Year);

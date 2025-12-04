@@ -1,20 +1,62 @@
+version: '3.8'
+
 services:
-  # PostgreSQL database
-  # Заполнить 
-
-  # Redis cache
-  # Заполнить 
-
-  # MinIO file storage
-  # Заполнить 
-
-  # pgAdmin for database management
-  # Заполнить 
-
-  # Redis Commander for Redis management
-  # Заполнить 
+ postgres:
+  image: postgres:latest
+  container_name: library-postgres
+  environment:
+   POSTGRES_DB: library
+   POSTGRES_USER: postgres
+   POSTGRES_PASSWORD: postgres
+  ports:
+   - "5438:5432"
+  volumes:
+   - postgres_data:/var/lib/postgresql/data
+  networks:
+   - library-net
+ 
+ redis:
+  image: redis:latest
+  container_name: library-redis
+  ports:
+   - "6380:6379"
+  volumes:
+   - redis_data:/data
+  command: redis-server --appendonly yes
+  networks:
+   - library-net
+ 
+ redisinsight:
+  image: redis/redisinsight:latest
+  container_name: library-redisinsight
+  ports:
+   - "5540:5540"
+  volumes:
+   - redisinsight_data:/data
+  networks:
+   - library-net
+ 
+ minio:
+  image: minio/minio
+  container_name: library-minio
+  ports:
+   - "9003:9000"
+   - "9004:9001"
+  environment:
+   MINIO_ROOT_USER: AKIAIOSFODNN7EXAMPLE
+   MINIO_ROOT_PASSWORD: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+  volumes:
+   - minio_data:/data
+  command: server /data --console-address ":9001"
+  networks:
+   - library-net
 
 volumes:
  postgres_data:
  redis_data:
+ redisinsight_data:
  minio_data:
+
+networks:
+ library-net:
+  driver: bridge

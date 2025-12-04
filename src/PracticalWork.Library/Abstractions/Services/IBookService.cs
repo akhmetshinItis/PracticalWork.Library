@@ -22,7 +22,7 @@ public interface IBookService
     /// Перевести книгу в архив
     /// </summary>
     /// <param name="bookId">Идентификатор книги</param>
-    Task ArchiveBook(Guid bookId);
+    Task<BookArchive> ArchiveBook(Guid bookId);
     
     /// <summary>
     /// Получить список книг

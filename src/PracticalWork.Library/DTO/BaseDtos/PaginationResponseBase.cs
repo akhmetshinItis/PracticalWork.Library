@@ -9,6 +9,6 @@ namespace PracticalWork.Library.DTO.BaseDtos
         /// <summary>
         /// Список сущностей
         /// </summary>
-        public List<T> Entities { get; set; }
+        public IReadOnlyList<T> Entities { get; set; }
     }
 }

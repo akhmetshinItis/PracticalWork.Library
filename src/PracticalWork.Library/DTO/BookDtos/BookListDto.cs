@@ -43,11 +43,6 @@ public class BookListDto
     public BookStatus Status { get; set; }
     
     /// <summary>
-    /// Путь к изображению обложки
-    /// </summary>
-    public string CoverImagePath { get; set; }
-    
-    /// <summary>
     /// В архиве
     /// </summary>
     public bool IsArchived { get; set; }

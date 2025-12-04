@@ -35,6 +35,11 @@ public sealed class Book
 
     /// <summary>В архиве</summary>
     public bool IsArchived { get; set; }
+    
+    /// <summary>
+    /// Записи о выдаче
+    /// </summary>
+    public IReadOnlyList<BookBorrow> IssuanceRecords  { get; set; }
 
     /// <summary>Проверка перевода в архив</summary>
     public bool CanBeArchived() => Status != BookStatus.Borrow;
@@ -62,7 +67,11 @@ public sealed class Book
         Description = description;
         CoverImagePath = coverImagePath;
     }
-
+    
+    /// <summary>
+    /// Обновление книги
+    /// </summary>
+    /// <param name="updatedBook">обновленная книга</param>
     public void Update(Book updatedBook)
     {
         Title = updatedBook.Title;

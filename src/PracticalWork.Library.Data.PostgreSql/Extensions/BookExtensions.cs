@@ -26,6 +26,21 @@ namespace PracticalWork.Library.Data.PostgreSql.Extensions
                 Status = bookEntity.Status,
                 CoverImagePath = bookEntity.CoverImagePath,
                 IsArchived = bookEntity.Status == BookStatus.Archived,
+                IssuanceRecords = bookEntity.IssuanceRecords?
+                    .Select(b => b.ToBookBorrow())
+                    .ToList() ?? new List<BookBorrow>(),
+            };
+        public static BookBorrow ToBookBorrow(this BookBorrowEntity entity) =>
+            new()
+            {
+                Status = entity.Status,
+                ReturnDate = entity.ReturnDate,
+                DueDate = entity.DueDate,
+                BorrowDate = entity.BorrowDate,
+                Book = new Book
+                {
+                    Status = entity.Book.Status,
+                }
             };
     }
 }

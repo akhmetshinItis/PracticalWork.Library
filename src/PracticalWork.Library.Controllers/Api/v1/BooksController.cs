@@ -59,9 +59,9 @@ public class BooksController(IBookService bookService) : Controller
     [ProducesResponseType(500)]
     public async Task<IActionResult> ArchiveBookAsync(Guid id)
     {
-        await bookService.ArchiveBook(id);
+        var result = await bookService.ArchiveBook(id);
 
-        return Ok();
+        return Ok(result.ToArchiveBookResponse());
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public class BooksController(IBookService bookService) : Controller
     [ProducesResponseType(500)]
     public async Task<Contracts.v1.Abstracts.PaginationResponseBase<BookResponse>> GetBooksAsync([FromQuery] GetBooksRequest request)
     {
-        return (await bookService.GetBooks(request.ToRequestBookModel())).ToResponseBookContract();
+        return (await bookService.GetBooks(request.ToRequestBookModel())).ToBookPaginationResponse();
     }
     
     /// <summary>

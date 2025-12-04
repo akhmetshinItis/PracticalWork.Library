@@ -81,9 +81,7 @@ namespace PracticalWork.Library.Data.PostgreSql.Migrations
                         .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateOnly>("DueDate")
                         .HasColumnType("date");
@@ -185,7 +183,7 @@ namespace PracticalWork.Library.Data.PostgreSql.Migrations
 
             modelBuilder.Entity("PracticalWork.Library.Data.PostgreSql.Entities.BookBorrowEntity", b =>
                 {
-                    b.HasOne("PracticalWork.Library.Data.PostgreSql.Entities.AbstractBookEntity", null)
+                    b.HasOne("PracticalWork.Library.Data.PostgreSql.Entities.AbstractBookEntity", "Book")
                         .WithMany("IssuanceRecords")
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -196,6 +194,8 @@ namespace PracticalWork.Library.Data.PostgreSql.Migrations
                         .HasForeignKey("ReaderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Book");
                 });
 
             modelBuilder.Entity("PracticalWork.Library.Data.PostgreSql.Entities.EducationalBookEntity", b =>

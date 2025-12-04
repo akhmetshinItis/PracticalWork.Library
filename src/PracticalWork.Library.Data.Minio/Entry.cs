@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Minio;
+using PracticalWork.Library.Abstractions.Services;
 
 namespace PracticalWork.Library.Data.Minio;
 
@@ -10,10 +12,8 @@ public static class Entry
     /// </summary>
     public static IServiceCollection AddMinioFileStorage(this IServiceCollection serviceCollection, IConfiguration configuration)
     {
-        var connectionString = configuration["App:Minio:MinioFileStorageConnection"];
-
-        // Реализация подключения к Minio и сервисов
-
+        serviceCollection.Configure<MinioOptions>(configuration.GetSection("App:Minio"));
+        serviceCollection.AddScoped<IMinioService, MinioService>();
         return serviceCollection;
     }
 }

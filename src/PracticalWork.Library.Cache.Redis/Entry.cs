@@ -17,7 +17,6 @@ public static class Entry
         var connectionString = configuration["App:Redis:RedisCacheConnection"];
         var prefix = configuration["App:Redis:RedisCachePrefix"];
 
-        // Регистрация IConnectionMultiplexer для StackExchange.Redis
         if (!string.IsNullOrWhiteSpace(connectionString))
         {
             serviceCollection.AddSingleton<IConnectionMultiplexer>(sp =>
@@ -26,7 +25,6 @@ public static class Entry
             });
         }
 
-        // Регистрация IDistributedCache
         if (!string.IsNullOrWhiteSpace(connectionString))
         {
             serviceCollection.AddStackExchangeRedisCache(options =>
@@ -39,11 +37,9 @@ public static class Entry
             });
         }
 
-        // Регистрация сервисов кеша
         serviceCollection.AddScoped<ICacheService, CacheService>();
         serviceCollection.AddScoped<ICacheVersionService, CacheVersionService>();
 
-        // Регистрация опций кеша для книг
         serviceCollection.Configure<BooksCacheOptions>(configuration.GetSection("App:BooksCache"));
 
         return serviceCollection;

@@ -12,7 +12,7 @@ namespace PracticalWork.Library.Contracts.v1.Books.Response;
 /// <param name="Authors">Авторы</param>
 /// <param name="Description">Краткое описание книги</param>
 /// <param name="Year">Год издания</param>
-/// <param name="CoverImagePath">Путь к изображению обложки</param>
+/// <param name="CoverImageUrl">Путь к изображению обложки</param>
 /// <param name="Status">Статус</param>
 /// <param name="IsArchived">В архиве</param>
 public sealed record BookDetailsResponse(
@@ -22,7 +22,7 @@ public sealed record BookDetailsResponse(
     IReadOnlyList<string> Authors,
     string Description,
     int Year,
-    string CoverImagePath,
+    string CoverImageUrl,
     BookStatus Status,
     bool IsArchived
 ) : AbstractBook(Title, Authors, Description, Year);

@@ -17,24 +17,28 @@ public sealed class BookService : IBookService
     private readonly ICacheService _cacheService;
     private readonly ICacheVersionService _cacheVersionService;
     private readonly BooksCacheOptions _cacheOptions;
+    private readonly IMinioService _minioService;
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="bookRepository">Репозиторий работы с книгами</param>
     /// <param name="cacheService">Сервис кеша</param>
+    /// <param name="minioService">Сервис минио</param>
     /// <param name="cacheVersionService">Сервис версионирования кеша</param>
     /// <param name="cacheOptions">Опции кеша для книг</param>
     public BookService(
         IBookRepository bookRepository,
         ICacheService cacheService,
+        IMinioService minioService,
         ICacheVersionService cacheVersionService,
-        IOptions<BooksCacheOptions> cacheOptions)
+        IOptionsMonitor<BooksCacheOptions> cacheOptions)
     {
+        _minioService = minioService;
         _bookRepository = bookRepository;
         _cacheService = cacheService;
         _cacheVersionService = cacheVersionService;
-        _cacheOptions = cacheOptions.Value;
+        _cacheOptions = cacheOptions.CurrentValue;
     }
     
     /// <inheritdoc/> 
@@ -44,11 +48,6 @@ public sealed class BookService : IBookService
         try
         {
             var bookId = await _bookRepository.CreateBook(book);
-            
-            if (_cacheOptions?.BooksListCacheOptions?.Prefix != null)
-            {
-                await _cacheVersionService.IncrementVersionAsync(_cacheOptions.BooksListCacheOptions.Prefix);
-            }
             
             return bookId;
         }
@@ -72,71 +71,58 @@ public sealed class BookService : IBookService
         
         await _bookRepository.UpdateBook(book, id);
         
-        await InvalidateBookCacheAsync(id);
+        await BookCacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
     }
 
     /// <inheritdoc/> 
-    public async Task ArchiveBook(Guid id)
+    public async Task<BookArchive> ArchiveBook(Guid id)
     {
        var book = await _bookRepository.GetBookById(id);
        book.Archive();
        
        await _bookRepository.UpdateBook(book, id);
        
-       await InvalidateBookCacheAsync(id);
+       await BookCacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
+       
+       var response = new BookArchive
+       {
+           Id = id,
+           Title = book.Title,
+           ArchivedAt = DateTime.UtcNow
+       };
+       return response;
     }
 
     /// <inheritdoc />
     public async Task<PaginationResponseBase<Book>> GetBooks(GetBooksRequestModel requestModel)
     {
-        if (_cacheOptions?.BooksListCacheOptions?.Prefix != null)
-        {
-            var version = await _cacheVersionService.GetVersionAsync(_cacheOptions.BooksListCacheOptions.Prefix);
-            var cacheKey = CacheKeyHasher.GenerateCacheKey(
-                _cacheOptions.BooksListCacheOptions.Prefix,
-                version,
-                new
-                {
-                    requestModel
-                });
-
-            var cachedBooks = await _cacheService.GetAsync<List<BookListDto>>(cacheKey);
-            if (cachedBooks != null && cachedBooks.Count != 0)
+        var cacheCheckResult = await BookCacheManager.CheckCacheAsync<BookListDto>(
+            _cacheVersionService,_cacheService,
+            _cacheOptions.BooksListCacheOptions.Prefix, requestModel,
+            dto => new Book
             {
-                var books = cachedBooks.Select(dto => new Book
-                {
-                    Id = dto.Id,
-                    Title = dto.Title,
-                    Authors = dto.Authors,
-                    Description = dto.Description,
-                    Year = dto.Year,
-                    Category = dto.Category,
-                    Status = dto.Status,
-                    CoverImagePath = dto.CoverImagePath,
-                    IsArchived = dto.IsArchived
-                }).ToList();
-
-                return new PaginationResponseBase<Book>
-                {
-                    Entities = books,
-                };
-            }
+                Id = dto.Id,
+                Title = dto.Title,
+                Authors = dto.Authors,
+                Description = dto.Description,
+                Year = dto.Year,
+                Category = dto.Category,
+                Status = dto.Status,
+                IsArchived = dto.IsArchived
+            });
+        if (cacheCheckResult.Count != 0)
+        {
+            return new PaginationResponseBase<Book>
+            {
+                Entities = cacheCheckResult
+            };
         }
-
         var booksFromDb = await _bookRepository.GetBooks(requestModel);
 
-        if (_cacheOptions?.BooksListCacheOptions != null)
-        {
-            var version = await _cacheVersionService.GetVersionAsync(_cacheOptions.BooksListCacheOptions.Prefix);
-            var cacheKey = CacheKeyHasher.GenerateCacheKey(
-                _cacheOptions.BooksListCacheOptions.Prefix,
-                version,
-                new
-                {
-                    requestModel
-                });
-
-            var booksListDto = booksFromDb.Select(book => new BookListDto
+        await BookCacheManager.WriteToCacheAsync(
+            _cacheVersionService, _cacheService,
+            _cacheOptions.BooksListCacheOptions, requestModel, booksFromDb,
+            book => new BookListDto
             {
                 Id = book.Id,
                 Title = book.Title,
@@ -145,14 +131,8 @@ public sealed class BookService : IBookService
                 Year = book.Year,
                 Category = book.Category,
                 Status = book.Status,
-                CoverImagePath = book.CoverImagePath,
                 IsArchived = book.IsArchived
-            }).ToList();
-
-            var ttl = _cacheOptions.BooksListCacheOptions.TtlMinutes;
-            await _cacheService.SetAsync(cacheKey, booksListDto, TimeSpan.FromMinutes(ttl));
-        }
-
+            });
         return new PaginationResponseBase<Book>
         {
             Entities = booksFromDb,
@@ -166,21 +146,20 @@ public sealed class BookService : IBookService
 
         if (book.IsArchived)
             throw new BookServiceException("Нельзя изменить архивную книгу");
-
-        string coverPath = book.CoverImagePath;
+        var currentDate = DateTime.UtcNow;
+        var fileName = $"book-covers/{currentDate.Year}/{currentDate.Month}/{id}.";
 
         if (coverFile?.HasFile == true)
         {
             ValidateCover(coverFile);
-
-            // coverPath = await _fileStorage.UploadBookCover(id, coverFile);
+            await _minioService.UploadFileAsync(fileName, coverFile.Stream, coverFile.ContentType);
         }
 
-        book.UpdateDetails(description, coverPath);
+        book.UpdateDetails(description, fileName);
 
         await _bookRepository.UpdateBook(book, id);
 
-        await InvalidateBookCacheAsync(id);
+        await BookCacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
     }
 
     private void ValidateCover(UploadedFile file)
@@ -191,26 +170,4 @@ public sealed class BookService : IBookService
         if (file.ContentType is not ("image/jpeg" or "image/png"))
             throw new BookServiceException("Разрешён только JPEG или PNG");
     }
-
-    /// <summary>
-    /// Инвалидация кеша связанных данных при изменении книги.
-    /// Инкрементирует версию кеша по префиксу, что делает все старые ключи невалидными.
-    /// Ключи генерируются через CacheKeyHasher в формате: {prefix}:v{version}:{hash}
-    /// </summary>
-    /// <param name="bookId">Идентификатор книги</param>
-    private async Task InvalidateBookCacheAsync(Guid bookId)
-    {
-        // Инвалидация кеша списка книг (books:list:{hash})
-        if (_cacheOptions?.BooksListCacheOptions?.Prefix != null)
-        {
-            await _cacheVersionService.IncrementVersionAsync(_cacheOptions.BooksListCacheOptions.Prefix);
-        }
-
-        // Инвалидация кеша списка книг для модуля работы библиотеки (library:books:{hash})
-        if (_cacheOptions?.LibraryBooksCacheOptions?.Prefix != null)
-        {
-            await _cacheVersionService.IncrementVersionAsync(_cacheOptions.LibraryBooksCacheOptions.Prefix);
-        }
-    }
-
 }
