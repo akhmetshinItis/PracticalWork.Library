@@ -65,7 +65,7 @@ public class LibraryService: ILibraryService
         book.Status = BookStatus.Borrow;
         await _bookBorrowRepository.CreateBookBorrow(bookId, readerId, bookBorrow);
         await _bookRepository.UpdateBook(book, bookId);
-        var message = new BookBorrowedEvent(bookId, readerId, bookBorrow.Book.Title, 
+        var message = new BookBorrowedEvent(bookId, readerId, book.Title, 
             reader.FullName, bookBorrow.BorrowDate, bookBorrow.DueDate );
         await _producer.ProduceBookBorrowAsync(message);
         await CacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
