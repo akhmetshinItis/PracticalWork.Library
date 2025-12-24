@@ -57,7 +57,11 @@ public class ReportService: IReportService
             .GetLogsPageAsync(model);
         return new PaginationResponseDto<ActivityLog>()
         {
-            Entities = logs
+            Entities = logs.Item1,
+            TotalCount = logs.Item2,
+            PageNumber = model.PageNumber,
+            PageSize = model.PageSize,
+            PageCount = (int)Math.Ceiling(logs.Item2 / (double)model.PageSize),
         };
     }
 
@@ -84,7 +88,7 @@ public class ReportService: IReportService
             periodFrom, periodTo, eventTypes);
         try
         {
-            var reportResult = _reportGenerateService.GenerateReport(reportId, logs);
+            var reportResult = _reportGenerateService.GenerateReport(reportId, logs.Item1);
             await _minioService.UploadFileAsync(_minioOptions.ReportsBucketName,
                 reportResult.FileName, reportResult.Content, reportResult.ContentType);
             var fileName = reportResult.FileName.Split('/')[^1];

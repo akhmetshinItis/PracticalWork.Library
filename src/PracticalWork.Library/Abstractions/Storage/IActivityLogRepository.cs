@@ -22,7 +22,7 @@ public interface IActivityLogRepository
     /// </summary>
     /// <param name="model">Объект запроса пагинации</param>
     /// <returns>Список записей</returns>
-    Task<IReadOnlyList<ActivityLog>> GetLogsPageAsync(GetActivityLogsRequestModel model);
+    Task<(IReadOnlyList<ActivityLog>, int)> GetLogsPageAsync(GetActivityLogsRequestModel model);
     
     /// <summary>
     /// Получить записи событий
@@ -31,6 +31,6 @@ public interface IActivityLogRepository
     /// <param name="periodTo">Фильтр на окончание даты</param>
     /// <param name="eventTypes">Фильтр на типы событий</param>
     /// <returns>Список записей</returns>
-    Task<IReadOnlyList<ActivityLog>> GetLogsAsync(
+    Task<(IReadOnlyList<ActivityLog>, int)> GetLogsAsync(
         DateOnly? periodFrom, DateOnly? periodTo, string[] eventTypes);
 }

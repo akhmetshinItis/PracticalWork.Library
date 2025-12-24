@@ -68,6 +68,11 @@ namespace PracticalWork.Library.Controllers.Mappers.v1
                 Entities = booksPaginationResponse.Entities
                     .Select(ToBookResponse)
                     .ToList(),
+                
+                PageCount = booksPaginationResponse.PageCount,
+                TotalCount = booksPaginationResponse.TotalCount,
+                PageSize = booksPaginationResponse.PageSize,
+                PageNumber = booksPaginationResponse.PageNumber,
             };
         
         /// <summary>
@@ -114,6 +119,10 @@ namespace PracticalWork.Library.Controllers.Mappers.v1
                 new()
                 {
                     Entities = response.Entities.Select(ToBookWithIssuanceRecordsResponse).ToList(),
+                    PageCount = response.PageCount,
+                    TotalCount = response.TotalCount,
+                    PageSize = response.PageSize,
+                    PageNumber = response.PageNumber,
                 };
         
         /// <summary>

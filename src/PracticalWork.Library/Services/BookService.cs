@@ -132,14 +132,18 @@ public sealed class BookService : IBookService
         {
             return new PaginationResponseDto<Book>
             {
-                Entities = cacheCheckResult
+                Entities = cacheCheckResult,
+                TotalCount = cacheCheckResult.Count,
+                PageNumber = requestModel.PageNumber,
+                PageSize = requestModel.PageSize,
+                PageCount = (int)Math.Ceiling(cacheCheckResult.Count / (double)requestModel.PageSize),
             };
         }
         var booksFromDb = await _bookRepository.GetBooks(requestModel);
 
         await CacheManager.WriteToCacheAsync(
             _cacheVersionService, _cacheService,
-            _cacheOptions.BooksListCacheOptions, requestModel, booksFromDb,
+            _cacheOptions.BooksListCacheOptions, requestModel, booksFromDb.Item1,
             book => new BookListDto
             {
                 Id = book.Id,
@@ -153,7 +157,11 @@ public sealed class BookService : IBookService
             });
         return new PaginationResponseDto<Book>
         {
-            Entities = booksFromDb,
+            Entities = booksFromDb.Item1,
+            TotalCount = booksFromDb.Item2,
+            PageNumber = requestModel.PageNumber,
+            PageSize = requestModel.PageSize,
+            PageCount = (int)Math.Ceiling(cacheCheckResult.Count / (double)requestModel.PageSize),
         };
     }
     

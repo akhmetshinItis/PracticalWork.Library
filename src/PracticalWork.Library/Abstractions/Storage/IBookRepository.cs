@@ -34,13 +34,13 @@ public interface IBookRepository
     /// </summary>
     /// <param name="request">Запрос</param>
     /// <returns>Список книг</returns>
-    Task<List<Book>> GetBooks(GetBooksRequestModel request);
+    Task<(List<Book>, int)> GetBooks(GetBooksRequestModel request);
     /// <summary>
     /// Получить не архивные книги с записями о выдаче
     /// </summary>
     /// <param name="request">Объект пагинации</param>
     /// <returns>Список книг</returns>
-    Task<IReadOnlyList<Book>> GetNonArchivedBooksPageWithIssuanceRecords(
+    Task<(IReadOnlyList<Book>, int)> GetNonArchivedBooksPageWithIssuanceRecords(
         PaginationRequestDto request);
     /// <summary>
     /// Получить книгу по названию

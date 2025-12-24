@@ -86,20 +86,22 @@ public sealed class BookRepository : IBookRepository
     }
     
     /// <inheritdoc />
-    public async Task<IReadOnlyList<Book>> GetNonArchivedBooksPageWithIssuanceRecords(
+    public async Task<(IReadOnlyList<Book>, int)> GetNonArchivedBooksPageWithIssuanceRecords(
         PaginationRequestDto request)
     {
-        var entities = _appDbContext.Books
+        var query = _appDbContext.Books
             .Where(b => b.Status != BookStatus.Archived)
-            .Include(b => b.IssuanceRecords)
+            .Include(b => b.IssuanceRecords);
+        
+        var entities = query
             .SkipTake(request)
             .Select(e => e.ToBook());
         
-        return await entities.ToListAsync();
+        return (await entities.ToListAsync(), await query.CountAsync());
     }
     
     /// <inheritdoc />
-    public async Task<List<Book>> GetBooks(GetBooksRequestModel request)
+    public async Task<(List<Book>, int)> GetBooks(GetBooksRequestModel request)
     {
         IQueryable<AbstractBookEntity> query = request.Category switch
         {
@@ -116,7 +118,7 @@ public sealed class BookRepository : IBookRepository
             .Select(x => x.ToBook())
             .ToListAsync();
         
-        return entities;
+        return (entities, await query.CountAsync());
     }
 
 }

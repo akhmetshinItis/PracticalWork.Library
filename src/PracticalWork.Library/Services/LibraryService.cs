@@ -176,6 +176,10 @@ public class LibraryService: ILibraryService
             return new PaginationResponseDto<Book>
             {
                 Entities = checkCacheResult,
+                TotalCount = checkCacheResult.Count,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                PageCount = (int)Math.Ceiling(checkCacheResult.Count / (double)request.PageSize),
             };
         }
         
@@ -183,7 +187,7 @@ public class LibraryService: ILibraryService
             .GetNonArchivedBooksPageWithIssuanceRecords(request);
         
         await CacheManager.WriteToCacheAsync(_cacheVersionService, _cacheService,
-            _cacheOptions.LibraryBooksCacheOptions, request, booksFromDb,
+            _cacheOptions.LibraryBooksCacheOptions, request, booksFromDb.Item1,
             book => new LibraryBookDto
             {
                 Title = book.Title,
@@ -203,7 +207,11 @@ public class LibraryService: ILibraryService
             });
         return new PaginationResponseDto<Book>
         {
-            Entities = booksFromDb,
+            Entities = booksFromDb.Item1,
+            TotalCount = booksFromDb.Item2,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+            PageCount = (int)Math.Ceiling(booksFromDb.Item2 / (double)request.PageSize),
         };
     }
 }

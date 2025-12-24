@@ -50,5 +50,9 @@ public static class PaginationExtensions
             Entities = paginationResponse.Entities
                 .Select(e => new ActivityLogResponse(e.Event, e.EventType, e.EventDate))
                 .ToList(),
+            PageCount = paginationResponse.PageCount,
+            TotalCount = paginationResponse.TotalCount,
+            PageSize = paginationResponse.PageSize,
+            PageNumber = paginationResponse.PageNumber,
         };
 }
