@@ -19,7 +19,7 @@ namespace PracticalWork.Library.DTO.BaseDtos
         /// <summary>
         /// Количество страниц
         /// </summary>
-        public int PageCount { get; set; }
+        public int PageCount { get; set; } // TODO Переделать формулу в экстеншн метод, когда будет время
         
         /// <summary>
         /// Номер страницы
