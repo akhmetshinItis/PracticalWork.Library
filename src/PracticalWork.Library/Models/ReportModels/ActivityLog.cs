@@ -33,9 +33,9 @@ public class ActivityLog
     /// <summary>
     /// Десериализует json в объект события системы
     /// </summary>
-    /// <param name="eventType">тип события системы</param>
-    /// <param name="jsonb">сериализованный объект события системы</param>
-    /// <returns>объект события системы</returns>
+    /// <param name="eventType">Тип события системы</param>
+    /// <param name="jsonb">Сериализованный объект события системы</param>
+    /// <returns>Объект события системы</returns>
     /// <exception cref="JsonException">Исключения если не нашелся подходящий тип события</exception>
     public static BaseEvent DeserializeEvent(string eventType, string jsonb)
     {

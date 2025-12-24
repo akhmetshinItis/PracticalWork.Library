@@ -2,6 +2,9 @@ using PracticalWork.Library.Enums;
 
 namespace PracticalWork.Library.DTO.BaseDtos
 {
+    /// <summary>
+    /// Базовая модель запроса для пагинации
+    /// </summary>
     public class PaginationRequestDto
     {
         private int _pageNumber;

@@ -7,7 +7,7 @@ namespace PracticalWork.Library.Helpers;
 
 public static class CacheManager
 {
-      /// <summary>
+    /// <summary>
     /// Инвалидация кеша связанных данных при изменении книги.
     /// Инкрементирует версию кеша по префиксу, что делает все старые ключи невалидными.
     /// Ключи генерируются через CacheKeyHasher в формате: {prefix}:v{version}:{hash}
@@ -41,14 +41,14 @@ public static class CacheManager
     /// <summary>
     /// Проверяет кэш на наличие содержимого по типу
     /// </summary>
-    /// <param name="cacheVersionService">сервис версий кэша</param>
-    /// <param name="cacheService">сервис кэша</param>
-    /// <param name="prefix">префикс кэша</param>
-    /// <param name="parameter">параметр клюсча кэша</param>
-    /// <param name="map">делегат маппинга</param>
-    /// <typeparam name="TCache">тип объекта кэша</typeparam>
-    /// <typeparam name="TModel">тип объекта доменной модели</typeparam>
-    /// <returns>список книг</returns>
+    /// <param name="cacheVersionService">Сервис версий кэша</param>
+    /// <param name="cacheService">Сервис кэша</param>
+    /// <param name="prefix">Префикс кэша</param>
+    /// <param name="parameter">Параметр клюсча кэша</param>
+    /// <param name="map">Делегат маппинга</param>
+    /// <typeparam name="TCache">Тип объекта кэша</typeparam>
+    /// <typeparam name="TModel">Тип объекта доменной модели</typeparam>
+    /// <returns>Список книг</returns>
     public static async Task<List<TModel>> CheckCacheAsync<TModel,TCache>(ICacheVersionService cacheVersionService, ICacheService cacheService,
         string prefix, object parameter, Func<TCache, TModel> map)
     {
@@ -74,14 +74,14 @@ public static class CacheManager
     /// <summary>
     /// записивает в кэш сериализованные объекты
     /// </summary>
-    /// <param name="cacheVersionService">сервис версий кэша</param>
-    /// <param name="cacheService">сервис кэша</param>
-    /// <param name="option">опция кэша</param>
-    /// <param name="parameter">параметр ключа кэша</param>
-    /// <param name="modelList">список объектов для маппинга</param>
-    /// <param name="map">делегат маппинга</param>
-    /// <typeparam name="TCache">тип объекта кэша</typeparam>
-    /// <typeparam name="TModel">тип объекта доменной модели</typeparam>
+    /// <param name="cacheVersionService">Сервис версий кэша</param>
+    /// <param name="cacheService">Сервис кэша</param>
+    /// <param name="option">Опция кэша</param>
+    /// <param name="parameter">Параметр ключа кэша</param>
+    /// <param name="modelList">Список объектов для маппинга</param>
+    /// <param name="map">Делегат маппинга</param>
+    /// <typeparam name="TCache">Тип объекта кэша</typeparam>
+    /// <typeparam name="TModel">Тип объекта доменной модели</typeparam>
     public static async Task WriteToCacheAsync<TModel, TCache>(ICacheVersionService cacheVersionService, ICacheService cacheService,
         CacheOptions option, object parameter, IReadOnlyList<TModel> modelList, Func<TModel, TCache> map)
     {

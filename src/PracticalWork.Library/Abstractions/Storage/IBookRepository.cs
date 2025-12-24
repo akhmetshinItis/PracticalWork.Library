@@ -25,8 +25,8 @@ public interface IBookRepository
     /// <summary>
     /// Получить книгу по идентификатору
     /// </summary>
-    /// <param name="bookId"></param>
-    /// <returns></returns>
+    /// <param name="bookId">Идентификатор книги</param>
+    /// <returns>Книга</returns>
     Task<Book> GetBookById(Guid bookId);
 
     /// <summary>
@@ -38,14 +38,14 @@ public interface IBookRepository
     /// <summary>
     /// Получить не архивные книги с записями о выдаче
     /// </summary>
-    /// <param name="request">объект пагинации</param>
-    /// <returns>список книг</returns>
+    /// <param name="request">Объект пагинации</param>
+    /// <returns>Список книг</returns>
     Task<IReadOnlyList<Book>> GetNonArchivedBooksPageWithIssuanceRecords(
         PaginationRequestDto request);
     /// <summary>
     /// Получить книгу по названию
     /// </summary>
-    /// <param name="title">название книги</param>
-    /// <returns>идентификатор книги</returns>
+    /// <param name="title">Название книги</param>
+    /// <returns>Идентификатор книги</returns>
     Task<Guid> GetBookIdByTitle(string title);
 }

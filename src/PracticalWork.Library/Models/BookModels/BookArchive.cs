@@ -1,5 +1,8 @@
 namespace PracticalWork.Library.Models.BookModels;
 
+/// <summary>
+/// Модель, представляющая архивированную книгу
+/// </summary>
 public class BookArchive
 {
     /// <summary>

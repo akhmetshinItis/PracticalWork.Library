@@ -3,6 +3,9 @@ using PracticalWork.Library.Contracts.v1.Books.Request;
 
 namespace PracticalWork.Library.Controllers.Validations.v1;
 
+/// <summary>
+/// Валидатор запроса на создание книги с использованием FluentValidation
+/// </summary>
 public sealed class CreateBookRequestValidator : AbstractValidator<CreateBookRequest>
 {
     public CreateBookRequestValidator()

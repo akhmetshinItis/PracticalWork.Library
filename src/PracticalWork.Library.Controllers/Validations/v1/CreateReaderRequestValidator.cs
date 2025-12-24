@@ -4,6 +4,9 @@ using PracticalWork.Library.Contracts.v1.Reader.Request;
 
 namespace PracticalWork.Library.Controllers.Validations.v1;
 
+/// <summary>
+/// Валидатор запроса на создание читателя с использованием FluentValidation
+/// </summary>
 public class CreateReaderRequestValidator: AbstractValidator<CreateReaderRequest>
 {
     public CreateReaderRequestValidator()

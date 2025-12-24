@@ -2,6 +2,9 @@ using PracticalWork.Library.Enums;
 
 namespace PracticalWork.Library.Models.BookModels;
 
+/// <summary>
+/// Модель, представляющая выдачу книги читателю
+/// </summary>
 public class BookBorrow
 {
     /// <summary>Дата выдачи книги</summary>
@@ -24,7 +27,7 @@ public class BookBorrow
     /// <summary>
     /// Создает новый объект выдачи книги
     /// </summary>
-    /// <returns>объект выдачи книги</returns>
+    /// <returns>Объект выдачи книги</returns>
     public static BookBorrow CreateBookBorrow()
     {
         var bookBorrow = new BookBorrow

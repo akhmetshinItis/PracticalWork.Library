@@ -50,10 +50,34 @@ public sealed class AppDbContext : DbContext
 
     #endregion
 
+    /// <summary>
+    /// Набор сущностей книг (базовый тип)
+    /// </summary>
     internal DbSet<AbstractBookEntity> Books { get; set; }
+
+    /// <summary>
+    /// Набор сущностей учебных книг
+    /// </summary>
     internal DbSet<EducationalBookEntity> EducationalBooks { get; set; }
+
+    /// <summary>
+    /// Набор сущностей художественных книг
+    /// </summary>
     internal DbSet<FictionBookEntity> FictionBooks { get; set; }
+
+    /// <summary>
+    /// Набор сущностей научных книг
+    /// </summary>
     internal DbSet<ScientificBookEntity> ScientificBooks { get; set; }
+
+    /// <summary>
+    /// Набор сущностей читателей
+    /// </summary>
     internal DbSet<ReaderEntity> Readers { get; set; }
+
+    /// <summary>
+    /// Набор сущностей выдач книг
+    /// </summary>
     internal DbSet<BookBorrowEntity> BookBorrows { get; set; }
+
 }

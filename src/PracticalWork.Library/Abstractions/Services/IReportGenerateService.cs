@@ -10,8 +10,8 @@ public interface IReportGenerateService
     /// <summary>
     /// Генерирует отчет по записям событий системы
     /// </summary>
-    /// <param name="reportId">индентификатор отчета</param>
-    /// <param name="logs">записи событий системы</param>
-    /// <returns>объект сгенерированного отчета</returns>
+    /// <param name="reportId">Индентификатор отчета</param>
+    /// <param name="logs">Записи событий системы</param>
+    /// <returns>Объект сгенерированного отчета</returns>
     ReportGenerateResult GenerateReport(Guid reportId, IReadOnlyList<ActivityLog> logs);
 }

@@ -11,31 +11,35 @@ public interface IReportRepository
     /// <summary>
     /// Создать отчет
     /// </summary>
-    /// <param name="report">объект отчета</param>
-    /// <returns>идентификатор отчета</returns>
+    /// <param name="report">Объект отчета</param>
+    /// <returns>Идентификатор отчета</returns>
     Task<Guid> CreateReport(Report report);
+    
     /// <summary>
     /// Получить готовые отчеты
     /// </summary>
-    /// <returns>список отчетов</returns>
+    /// <returns>Список отчетов</returns>
     Task<IReadOnlyList<Report>> GetReadyReports();
+    
     /// <summary>
     /// Получить отчет по идентификатору
     /// </summary>
-    /// <param name="reportId">идентификатор отчета</param>
-    /// <returns>объект отчета</returns>
+    /// <param name="reportId">Идентификатор отчета</param>
+    /// <returns>Объект отчета</returns>
     Task<Report> GetReportById(Guid reportId);
+    
     /// <summary>
     /// Получить отчет по имени файла
     /// </summary>
-    /// <param name="reportName">название отчета</param>
-    /// <returns>идентификатор и объект отчета</returns>
+    /// <param name="reportName">Название отчета</param>
+    /// <returns>Идентификатор и объект отчета</returns>
     Task<(Guid id, Report report)> GetReportByName(string reportName);
+    
     /// <summary>
     /// Обновить информациб об отчете
     /// </summary>
-    /// <param name="reportId">идентификатор отчета</param>
-    /// <param name="report">объект отчета</param>
-    /// <returns>задача</returns>
+    /// <param name="reportId">Идентификатор отчета</param>
+    /// <param name="report">Объект отчета</param>
+    /// <returns>Задача</returns>
     Task UpdateReport(Guid reportId,Report report);
 }

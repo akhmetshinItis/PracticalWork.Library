@@ -67,7 +67,7 @@ public sealed class BooksController(IBookService bookService) : Controller
     /// <summary>
     /// Получение списка книг с фильтрами
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="request">Запрос</param>
     /// <returns>Список книг</returns>
     [HttpGet]
     [Produces("application/json")]

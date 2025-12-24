@@ -39,7 +39,7 @@ public class Report
     /// <summary>
     /// Пометить отчет как сгенерированный
     /// </summary>
-    /// <param name="fileName">название отчета</param>
+    /// <param name="fileName">Название отчета</param>
     public void MarkAsGenerated(string fileName)
     {
         GeneratedAt = DateTime.UtcNow;

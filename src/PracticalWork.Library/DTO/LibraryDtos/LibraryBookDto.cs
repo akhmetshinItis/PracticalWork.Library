@@ -3,6 +3,9 @@ using PracticalWork.Library.Models.BookModels;
 
 namespace PracticalWork.Library.DTO.LibraryDtos;
 
+/// <summary>
+/// DTO для передачи информации о книге в библиотеке
+/// </summary>
 public class LibraryBookDto
 {
     /// <summary>

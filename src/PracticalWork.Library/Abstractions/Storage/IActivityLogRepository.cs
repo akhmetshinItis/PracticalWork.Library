@@ -13,24 +13,24 @@ public interface IActivityLogRepository
     /// <summary>
     /// Добавить запись события
     /// </summary>
-    /// <param name="activityLog">объект события</param>
-    /// <returns>задача</returns>
+    /// <param name="activityLog">Объект события</param>
+    /// <returns>Задача</returns>
     Task AddLogAsync(ActivityLog activityLog);
 
     /// <summary>
     /// Получить страницу записей событий
     /// </summary>
-    /// <param name="model">объект запроса пагинации</param>
-    /// <returns>список записей</returns>
+    /// <param name="model">Объект запроса пагинации</param>
+    /// <returns>Список записей</returns>
     Task<IReadOnlyList<ActivityLog>> GetLogsPageAsync(GetActivityLogsRequestModel model);
     
     /// <summary>
     /// Получить записи событий
     /// </summary>
-    /// <param name="periodFrom">фильтр на начало даты</param>
-    /// <param name="periodTo">фильтр на окончание даты</param>
-    /// <param name="eventTypes">фильтр на типы событий</param>
-    /// <returns>список записей</returns>
+    /// <param name="periodFrom">Фильтр на начало даты</param>
+    /// <param name="periodTo">Фильтр на окончание даты</param>
+    /// <param name="eventTypes">Фильтр на типы событий</param>
+    /// <returns>Список записей</returns>
     Task<IReadOnlyList<ActivityLog>> GetLogsAsync(
         DateOnly? periodFrom, DateOnly? periodTo, string[] eventTypes);
 }

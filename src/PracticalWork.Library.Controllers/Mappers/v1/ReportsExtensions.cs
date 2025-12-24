@@ -4,8 +4,16 @@ using PracticalWork.Library.Models.ReportModels;
 
 namespace PracticalWork.Library.Controllers.Mappers.v1;
 
+/// <summary>
+/// Расширения для преобразования объектов отчетов
+/// </summary>
 public static class ReportsExtensions
 {
+    /// <summary>
+    /// Преобразует модель Report в DTO ответа с деталями отчета
+    /// </summary>
+    /// <param name="report">Модель отчета</param>
+    /// <returns>DTO ответа ReportResponse</returns>
     public static ReportResponse ToReportResponse(this Report report)
     {
         return new ReportResponse(
@@ -17,6 +25,11 @@ public static class ReportsExtensions
             report.GeneratedAt);
     }
 
+    /// <summary>
+    /// Преобразует модель Report в DTO ответа после создания отчета
+    /// </summary>
+    /// <param name="report">Модель отчета</param>
+    /// <returns>DTO ответа ReportCreateResponse</returns>
     public static ReportCreateResponse ToReportCreateResponse(this Report report) =>
         new()
         {
@@ -27,10 +40,28 @@ public static class ReportsExtensions
         };
 }
 
+/// <summary>
+/// DTO ответа после создания отчета
+/// </summary>
 public class ReportCreateResponse
 {
+    /// <summary>
+    /// Начало отчетного периода
+    /// </summary>
     public DateOnly? PeriodFrom { get; set; }
-    public DateOnly? PeriodTo { get; set;  }
+
+    /// <summary>
+    /// Конец отчетного периода
+    /// </summary>
+    public DateOnly? PeriodTo { get; set; }
+
+    /// <summary>
+    /// Список типов событий, включенных в отчет
+    /// </summary>
     public IReadOnlyList<string> EventTypes { get; set; }
+
+    /// <summary>
+    /// Текущий статус отчета
+    /// </summary>
     public ReportStatus Status { get; set; }
 }

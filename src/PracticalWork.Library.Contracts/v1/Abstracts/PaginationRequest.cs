@@ -2,6 +2,9 @@ using PracticalWork.Library.Contracts.v1.Enums;
 
 namespace PracticalWork.Library.Contracts.v1.Abstracts
 {
+    /// <summary>
+    /// Модель запроса для пагинации данных
+    /// </summary>
     public class PaginationRequest
     {
         private int _pageNumber;

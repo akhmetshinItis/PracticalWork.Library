@@ -5,6 +5,8 @@
 /// </summary>
 public sealed class FictionBookEntity : AbstractBookEntity
 {
-    /// <summary>Категория художественной прозы</summary>
+    /// <summary>
+    /// Категория художественной прозы
+    /// </summary>
     public string CategoriesOfFiction { get; set; }
 }

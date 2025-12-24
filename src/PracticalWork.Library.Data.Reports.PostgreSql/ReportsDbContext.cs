@@ -45,6 +45,13 @@ public class ReportsDbContext: DbContext
 
     #endregion
 
+    /// <summary>
+    /// Набор сущностей отчетов
+    /// </summary>
     public DbSet<ReportEntity> Reports { get; set; }
+
+    /// <summary>
+    /// Набор сущностей журнала активности
+    /// </summary>
     public DbSet<ActivityLogEntity> ActivityLogs { get; set; }
 }

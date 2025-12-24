@@ -30,6 +30,12 @@ namespace PracticalWork.Library.Data.PostgreSql.Extensions
                     .Select(b => b.ToBookBorrow())
                     .ToList() ?? new List<BookBorrow>(),
             };
+        
+        /// <summary>
+        /// Преобразовать сущность <see cref="BookBorrowEntity"/> в доменную модель <see cref="BookBorrow"/>
+        /// </summary>
+        /// <param name="entity">Сущность выдачи книги</param>
+        /// <returns>Доменная модель выдачи книги</returns>
         public static BookBorrow ToBookBorrow(this BookBorrowEntity entity) =>
             new()
             {

@@ -8,22 +8,34 @@ namespace PracticalWork.Library.Data.PostgreSql.Entities;
 /// </summary>
 public abstract class AbstractBookEntity : EntityBase
 {
-    /// <summary>Название книги</summary>
+    /// <summary>
+    /// Название книги
+    /// </summary>
     public string Title { get; set; }
 
-    /// <summary>Авторы</summary>
+    /// <summary>
+    /// Авторы
+    /// </summary>
     public IReadOnlyList<string> Authors { get; set; }
 
-    /// <summary>Краткое описание книги</summary>
+    /// <summary>
+    /// Краткое описание книги
+    /// </summary>
     public string Description { get; set; }
 
-    /// <summary>Год издания</summary>
+    /// <summary>
+    /// Год издания
+    /// </summary>
     public int Year { get; set; }
 
-    /// <summary>Статус</summary>
+    /// <summary>
+    /// Статус
+    /// </summary>
     public BookStatus Status { get; set; }
 
-    /// <summary>Путь к изображению обложки</summary>
+    /// <summary>
+    /// Путь к изображению обложки
+    /// </summary>
     public string CoverImagePath { get; set; }
     
     /// <summary>
@@ -31,6 +43,8 @@ public abstract class AbstractBookEntity : EntityBase
     /// </summary>
     public BookCategory Category { get; set; }
 
-    /// <summary>Записи о выдачи книги</summary>
+    /// <summary>
+    /// Записи о выдачи книги
+    /// </summary>
     public ICollection<BookBorrowEntity> IssuanceRecords { get; set; }
 }

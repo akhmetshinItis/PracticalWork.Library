@@ -5,6 +5,9 @@ using PracticalWork.Library.Models.BookModels;
 
 namespace PracticalWork.Library.Abstractions.Services;
 
+/// <summary>
+/// Интерфейс сервиса для работы с книгами в библиотеке
+/// </summary>
 public interface IBookService
 {
     /// <summary>

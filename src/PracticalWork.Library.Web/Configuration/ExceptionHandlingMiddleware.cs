@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using PracticalWork.Library.Exceptions;
 
-namespace PracticalWork.Library.Web.Configuration ;
-
+namespace PracticalWork.Library.Web.Configuration
+{
+    /// <summary>
+    /// Мидлвейр для обработки ошибок
+    /// </summary>
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
@@ -147,3 +150,4 @@ namespace PracticalWork.Library.Web.Configuration ;
             await LogAndReturnAsync(context, exception, errorText, responseCode, logLevel);
         }
     }
+}

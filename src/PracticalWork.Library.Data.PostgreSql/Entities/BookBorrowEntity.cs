@@ -8,22 +8,34 @@ namespace PracticalWork.Library.Data.PostgreSql.Entities;
 /// </summary>
 public sealed class BookBorrowEntity : EntityBase
 {
-    /// <summary>Идентификатор книги</summary>
+    /// <summary>
+    /// Идентификатор книги
+    /// </summary>
     public Guid BookId { get; set; }
 
-    /// <summary>Идентификатор карточки читателя</summary>
+    /// <summary>
+    /// Идентификатор карточки читателя
+    /// </summary>
     public Guid ReaderId { get; set; }
 
-    /// <summary>Дата выдачи книги</summary>
+    /// <summary>
+    /// Дата выдачи книги
+    /// </summary>
     public DateOnly BorrowDate { get; set; }
 
-    /// <summary>Срок возврата книги</summary>
+    /// <summary>
+    /// Срок возврата книги
+    /// </summary>
     public DateOnly DueDate { get; set; }
 
-    /// <summary>Фактическая дата возврата книги</summary>
+    /// <summary>
+    /// Фактическая дата возврата книги
+    /// </summary>
     public DateOnly ReturnDate { get; set; }
 
-    /// <summary>Статус книги в библиотеке</summary>
+    /// <summary>
+    /// Статус книги в библиотеке
+    /// </summary>
     public BookIssueStatus Status { get; set; }
     
     /// <summary>

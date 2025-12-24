@@ -1,6 +1,9 @@
 
-namespace PracticalWork.Library.Exceptions;
-
+namespace PracticalWork.Library.Exceptions
+{
+    /// <summary>
+    /// Исключение о том, что сущность не найдена
+    /// </summary>
     public class EntityNotFoundException<TEntity> : NotFoundException
     {
         /// <summary>
@@ -12,3 +15,4 @@ namespace PracticalWork.Library.Exceptions;
         {
         }
     }
+}
