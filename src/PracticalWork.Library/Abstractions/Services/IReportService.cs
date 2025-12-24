@@ -22,6 +22,7 @@ public interface IReportService
     /// <param name="model">объект запроса пагинации</param>
     /// <returns>объект пагинации с записями</returns>
     Task<PaginationResponseDto<ActivityLog>> ReadSystemActivityLogs(GetActivityLogsRequestModel model);
+    
     /// <summary>
     /// Создать отчет по событиям системы
     /// </summary>
@@ -30,6 +31,7 @@ public interface IReportService
     /// <param name="eventTypes">фильтр на типы событий</param>
     /// <returns>отчет со статусом "в процессе"</returns>
     Task<Report> CreateReport(DateOnly? eventDateFrom, DateOnly? eventDateTo, string[] eventTypes);
+    
     /// <summary>
     /// Сгенерировать отчет
     /// </summary>
@@ -40,11 +42,13 @@ public interface IReportService
     /// <returns>задача</returns>
     Task GenerateReport(Guid reportId, DateOnly? periodFrom,
         DateOnly? periodTo, string[] eventTypes);
+    
     /// <summary>
     /// Получить список готовых отчетов
     /// </summary>
     /// <returns>список готовых отчетов</returns>
     Task<IReadOnlyList<Report>> GetListOfReadyReports();
+    
     /// <summary>
     /// Получить ссылку на отчет
     /// </summary>
