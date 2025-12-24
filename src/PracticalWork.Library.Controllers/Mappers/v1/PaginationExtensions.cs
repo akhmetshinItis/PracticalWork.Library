@@ -8,7 +8,7 @@ namespace PracticalWork.Library.Controllers.Mappers.v1;
 
 public static class PaginationExtensions
 {
-    public static PaginationRequestBase ToPaginationRequest(this Contracts.v1.Abstracts.PaginationRequestBase request) =>
+    public static PaginationRequestDto ToPaginationRequest(this Contracts.v1.Abstracts.PaginationRequest request) =>
         new()
         {
             PageSize = request.PageSize,
@@ -26,8 +26,8 @@ public static class PaginationExtensions
             EventDateTo = request.EventDateTo,
         };
 
-    public static Contracts.v1.Abstracts.PaginationResponseBase<ActivityLogResponse> ToActivityLogsPaginationResponse(
-        this PaginationResponseBase<ActivityLog> paginationResponse) =>
+    public static Contracts.v1.Abstracts.PaginationResponse<ActivityLogResponse> ToActivityLogsPaginationResponse(
+        this PaginationResponseDto<ActivityLog> paginationResponse) =>
         new()
         {
             Entities = paginationResponse.Entities

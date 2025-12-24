@@ -12,7 +12,7 @@ namespace PracticalWork.Library.Controllers.Api.v1;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/readers")]
-public class ReaderController: Controller
+public sealed class ReaderController: Controller
 {
     private readonly IReaderService _readerService;
 

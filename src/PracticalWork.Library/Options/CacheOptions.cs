@@ -3,7 +3,7 @@ namespace PracticalWork.Library.Options
     /// <summary>
     /// Базовые настройки для кеша
     /// </summary>
-    public class CacheOptionsBase
+    public class CacheOptions
     {
         /// <summary>
         /// Префикс

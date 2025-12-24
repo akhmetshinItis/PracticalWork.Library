@@ -41,7 +41,7 @@ public interface IBookRepository
     /// <param name="request">объект пагинации</param>
     /// <returns>список книг</returns>
     Task<IReadOnlyList<Book>> GetNonArchivedBooksPageWithIssuanceRecords(
-        PaginationRequestBase request);
+        PaginationRequestDto request);
     /// <summary>
     /// Получить книгу по названию
     /// </summary>

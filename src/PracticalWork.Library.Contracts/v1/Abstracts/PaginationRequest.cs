@@ -2,7 +2,7 @@ using PracticalWork.Library.Contracts.v1.Enums;
 
 namespace PracticalWork.Library.Contracts.v1.Abstracts
 {
-    public class PaginationRequestBase
+    public class PaginationRequest
     {
         private int _pageNumber;
         private int _pageSize;

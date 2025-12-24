@@ -87,7 +87,7 @@ public sealed class BookRepository : IBookRepository
     
     /// <inheritdoc />
     public async Task<IReadOnlyList<Book>> GetNonArchivedBooksPageWithIssuanceRecords(
-        PaginationRequestBase request)
+        PaginationRequestDto request)
     {
         var entities = _appDbContext.Books
             .Where(b => b.Status != BookStatus.Archived)

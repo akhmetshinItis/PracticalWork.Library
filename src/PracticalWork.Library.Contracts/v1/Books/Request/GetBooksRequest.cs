@@ -3,7 +3,7 @@ using PracticalWork.Library.Contracts.v1.Enums;
 
 namespace PracticalWork.Library.Contracts.v1.Books.Request
 {
-    public class GetBooksRequest : PaginationRequestBase
+    public class GetBooksRequest : PaginationRequest
     {
         /// <summary>
         /// Статус

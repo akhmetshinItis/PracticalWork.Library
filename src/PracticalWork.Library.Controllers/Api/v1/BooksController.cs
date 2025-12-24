@@ -12,7 +12,7 @@ namespace PracticalWork.Library.Controllers.Api.v1;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/books")]
-public class BooksController(IBookService bookService) : Controller
+public sealed class BooksController(IBookService bookService) : Controller
 {
     /// <summary> Создание новой книги</summary>
     [HttpPost]
@@ -74,7 +74,7 @@ public class BooksController(IBookService bookService) : Controller
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
-    public async Task<Contracts.v1.Abstracts.PaginationResponseBase<BookResponse>> GetBooksAsync([FromQuery] GetBooksRequest request)
+    public async Task<Contracts.v1.Abstracts.PaginationResponse<BookResponse>> GetBooksAsync([FromQuery] GetBooksRequest request)
     {
         return (await bookService.GetBooks(request.ToRequestBookModel())).ToBookPaginationResponse();
     }

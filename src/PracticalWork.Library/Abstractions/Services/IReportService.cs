@@ -21,7 +21,7 @@ public interface IReportService
     /// </summary>
     /// <param name="model">объект запроса пагинации</param>
     /// <returns>объект пагинации с записями</returns>
-    Task<PaginationResponseBase<ActivityLog>> ReadSystemActivityLogs(GetActivityLogsRequestModel model);
+    Task<PaginationResponseDto<ActivityLog>> ReadSystemActivityLogs(GetActivityLogsRequestModel model);
     /// <summary>
     /// Создать отчет по событиям системы
     /// </summary>

@@ -14,7 +14,7 @@ namespace PracticalWork.Library.Data.PostgreSql.Extensions
         /// <param name="queryable">IQueryable</param>
         /// <param name="pagination">Пагинация</param>
         /// <returns>IQueryable с пагинацией</returns>
-        public static IQueryable<T> SkipTake<T>(this IQueryable<T> queryable, PaginationRequestBase pagination)
+        public static IQueryable<T> SkipTake<T>(this IQueryable<T> queryable, PaginationRequestDto pagination)
         {
             ArgumentNullException.ThrowIfNull(queryable);
 

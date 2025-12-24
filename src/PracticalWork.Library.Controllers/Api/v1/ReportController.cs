@@ -10,7 +10,7 @@ namespace PracticalWork.Library.Controllers.Api.v1;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/reports")]
-public class ReportController: Controller
+public sealed class ReportController: Controller
 {
     private readonly IReportService _reportService;
 

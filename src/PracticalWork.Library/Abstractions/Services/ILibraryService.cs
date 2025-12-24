@@ -9,5 +9,5 @@ public interface ILibraryService
     Task ReturnBook(Guid bookId, Guid readerId);
     Task<(Guid bookId, Book book)> GetBookDetails(Guid bookId);
     Task<(Guid bookId, Book book)> GetBookDetails(string title);
-    Task<PaginationResponseBase<Book>> GetNonArchivedBooksPage(PaginationRequestBase request);
+    Task<PaginationResponseDto<Book>> GetNonArchivedBooksPage(PaginationRequestDto request);
 }

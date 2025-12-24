@@ -3,7 +3,7 @@ using PracticalWork.Library.Enums;
 
 namespace PracticalWork.Library.DTO.BookDtos
 {
-    public class GetBooksRequestModel : PaginationRequestBase
+    public class GetBooksRequestModel : PaginationRequestDto
     {
         /// <summary>
         /// Статус

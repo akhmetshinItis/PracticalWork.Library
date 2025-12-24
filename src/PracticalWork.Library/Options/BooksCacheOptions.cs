@@ -8,18 +8,18 @@ namespace PracticalWork.Library.Options
         /// <summary>
         /// Настройки кеша для списка книг с фильтрацией и пагинацией (books:list:{hash})
         /// </summary>
-        public CacheOptionsBase BooksListCacheOptions { get; set; }
+        public CacheOptions BooksListCacheOptions { get; set; }
         
         /// <summary>
         /// Настройки кеша для списка книг модуля работы библиотеки (library:books:{hash})
         /// </summary>
-        public CacheOptionsBase LibraryBooksCacheOptions { get; set; }
+        public CacheOptions LibraryBooksCacheOptions { get; set; }
         
         /// <summary>
         /// Настройки кеша для деталей книг (book:details:{id})
         /// </summary>
-        public CacheOptionsBase BookDetailsCacheOptions { get; set; }
+        public CacheOptions BookDetailsCacheOptions { get; set; }
 
-        public CacheOptionsBase ReportsCacheOptions { get; set; }
+        public CacheOptions ReportsCacheOptions { get; set; }
     }
 }

@@ -51,11 +51,11 @@ public class ReportService: IReportService
         await _activityLogRepository.AddLogAsync(log);
     }
 
-    public async Task<PaginationResponseBase<ActivityLog>> ReadSystemActivityLogs(GetActivityLogsRequestModel model)
+    public async Task<PaginationResponseDto<ActivityLog>> ReadSystemActivityLogs(GetActivityLogsRequestModel model)
     {
         var logs = await _activityLogRepository
             .GetLogsPageAsync(model);
-        return new PaginationResponseBase<ActivityLog>()
+        return new PaginationResponseDto<ActivityLog>()
         {
             Entities = logs
         };

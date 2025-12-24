@@ -112,7 +112,7 @@ public sealed class BookService : IBookService
     }
 
     /// <inheritdoc />
-    public async Task<PaginationResponseBase<Book>> GetBooks(GetBooksRequestModel requestModel)
+    public async Task<PaginationResponseDto<Book>> GetBooks(GetBooksRequestModel requestModel)
     {
         var cacheCheckResult = await CacheManager.CheckCacheAsync<Book,BookListDto>(
             _cacheVersionService,_cacheService,
@@ -130,7 +130,7 @@ public sealed class BookService : IBookService
             });
         if (cacheCheckResult.Count != 0)
         {
-            return new PaginationResponseBase<Book>
+            return new PaginationResponseDto<Book>
             {
                 Entities = cacheCheckResult
             };
@@ -151,7 +151,7 @@ public sealed class BookService : IBookService
                 Status = book.Status,
                 IsArchived = book.IsArchived
             });
-        return new PaginationResponseBase<Book>
+        return new PaginationResponseDto<Book>
         {
             Entities = booksFromDb,
         };

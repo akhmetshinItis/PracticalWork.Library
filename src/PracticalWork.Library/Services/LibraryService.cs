@@ -145,7 +145,7 @@ public class LibraryService: ILibraryService
         return await GetBookDetails(id);
     }
 
-    public async Task<PaginationResponseBase<Book>> GetNonArchivedBooksPage(PaginationRequestBase request)
+    public async Task<PaginationResponseDto<Book>> GetNonArchivedBooksPage(PaginationRequestDto request)
     {
         
         var checkCacheResult = await CacheManager.CheckCacheAsync<Book,LibraryBookDto>(
@@ -173,7 +173,7 @@ public class LibraryService: ILibraryService
             });
         if (checkCacheResult.Count != 0)
         {
-            return new PaginationResponseBase<Book>
+            return new PaginationResponseDto<Book>
             {
                 Entities = checkCacheResult,
             };
@@ -201,7 +201,7 @@ public class LibraryService: ILibraryService
                     Status = i.Status,
                 }).ToList()
             });
-        return new PaginationResponseBase<Book>
+        return new PaginationResponseDto<Book>
         {
             Entities = booksFromDb,
         };

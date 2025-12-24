@@ -39,8 +39,8 @@ public static class BooksExtensions
             PageNumber = request.PageNumber,
         };
 
-    public static Contracts.v1.Abstracts.PaginationResponseBase<BookResponse> ToBookPaginationResponse(
-        this PaginationResponseBase<Book> booksPaginationResponse)
+    public static Contracts.v1.Abstracts.PaginationResponse<BookResponse> ToBookPaginationResponse(
+        this PaginationResponseDto<Book> booksPaginationResponse)
         => new()
         {
             Entities = booksPaginationResponse.Entities
@@ -70,8 +70,8 @@ public static class BooksExtensions
             book.IsArchived
         );
 
-    public static Contracts.v1.Abstracts.PaginationResponseBase<BookWithIssuanceRecordsResponse>
-        ToBookWithIssuanceCursorPaginationResponse(this PaginationResponseBase<Book> response) =>
+    public static Contracts.v1.Abstracts.PaginationResponse<BookWithIssuanceRecordsResponse>
+        ToBookWithIssuanceCursorPaginationResponse(this PaginationResponseDto<Book> response) =>
         new()
         {
             Entities = response.Entities.Select(ToBookWithIssuanceRecordsResponse).ToList(),

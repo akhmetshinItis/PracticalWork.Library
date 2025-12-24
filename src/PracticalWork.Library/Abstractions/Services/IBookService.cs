@@ -28,7 +28,7 @@ public interface IBookService
     /// Получить список книг
     /// </summary>
     /// <returns></returns>
-    Task<PaginationResponseBase<Book>> GetBooks(GetBooksRequestModel requestModel);
+    Task<PaginationResponseDto<Book>> GetBooks(GetBooksRequestModel requestModel);
     
     /// <summary>
     /// Обновить детали книги (описание и обложка)

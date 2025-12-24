@@ -11,7 +11,7 @@ namespace PracticalWork.Library.Controllers.Api.v1;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/library")]
-public class LibraryController: Controller
+public sealed class LibraryController: Controller
 {
     private readonly ILibraryService _libraryService;
 
@@ -85,7 +85,7 @@ public class LibraryController: Controller
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
-    public async Task<IActionResult> GetBooksPage(PaginationRequestBase request)
+    public async Task<IActionResult> GetBooksPage(PaginationRequest request)
     {
         var result = await _libraryService
             .GetNonArchivedBooksPage(request.ToPaginationRequest());

@@ -83,7 +83,7 @@ public static class CacheManager
     /// <typeparam name="TCache">тип объекта кэша</typeparam>
     /// <typeparam name="TModel">тип объекта доменной модели</typeparam>
     public static async Task WriteToCacheAsync<TModel, TCache>(ICacheVersionService cacheVersionService, ICacheService cacheService,
-        CacheOptionsBase option, object parameter, IReadOnlyList<TModel> modelList, Func<TModel, TCache> map)
+        CacheOptions option, object parameter, IReadOnlyList<TModel> modelList, Func<TModel, TCache> map)
     {
         if (option.Prefix != null)
         {

@@ -2,7 +2,7 @@ using PracticalWork.Library.Enums;
 
 namespace PracticalWork.Library.DTO.BaseDtos
 {
-    public class PaginationRequestBase
+    public class PaginationRequestDto
     {
         private int _pageNumber;
         private int _pageSize;

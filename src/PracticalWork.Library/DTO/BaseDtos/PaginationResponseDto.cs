@@ -1,14 +1,14 @@
-namespace PracticalWork.Library.Contracts.v1.Abstracts
+namespace PracticalWork.Library.DTO.BaseDtos
 {
     /// <summary>
     /// Базовый ответ с пагинацией
     /// </summary>
     /// <typeparam name="T">Тип сущностей</typeparam>
-    public class PaginationResponseBase<T>
+    public class PaginationResponseDto<T>
     {
         /// <summary>
         /// Список сущностей
         /// </summary>
-        public List<T> Entities { get; set; }
+        public IReadOnlyList<T> Entities { get; set; }
     }
 }
