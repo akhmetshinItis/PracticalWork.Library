@@ -3,170 +3,123 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PracticalWork.Library.Abstractions.Services;
+using PracticalWork.Library.Abstractions.MessageBroker;
 using PracticalWork.Library.Events;
 using PracticalWork.Library.MessageBroker.Options;
 using PracticalWork.Library.MessageBroker.Utils;
-using PracticalWork.Library.Models.ReportModels;
 
 namespace PracticalWork.Library.MessageBroker.Workers;
 
-public class ConsumerWorker: BackgroundService
+public class ConsumerWorker : BackgroundService
 {
     private readonly IBus _bus;
     private readonly IServiceProvider _serviceProvider;
     private readonly RabbitMqOptions _options;
-    private readonly List<IDisposable> _subscriptions = new();
-    private readonly ILogger<ConsumerWorker> _logger;
     private readonly RabbitMqInfrastructureInitializer _initializer;
-    
+    private readonly ILogger<ConsumerWorker> _logger;
+
+    private readonly List<IDisposable> _subscriptions = new();
+
     public ConsumerWorker(
         IBus bus,
         IServiceProvider serviceProvider,
         IOptions<RabbitMqOptions> options,
-        ILogger<ConsumerWorker> logger,
-        RabbitMqInfrastructureInitializer initializer)
+        RabbitMqInfrastructureInitializer initializer,
+        ILogger<ConsumerWorker> logger)
     {
         _bus = bus;
         _serviceProvider = serviceProvider;
         _options = options.Value;
-        _logger = logger;
         _initializer = initializer;
+        _logger = logger;
     }
-    
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await _initializer.InitializeAsync();
-        SubscribeToAllQueues(stoppingToken);
+
+        Subscribe<BookCreatedEvent>(
+            "book_create_consumer",
+            _options.Library.BookCreate.QueueName,
+            stoppingToken);
+
+        Subscribe<BookArchivedEvent>(
+            "book_archive_consumer",
+            _options.Library.BookArchive.QueueName,
+            stoppingToken);
+
+        Subscribe<BookBorrowedEvent>(
+            "book_borrow_consumer",
+            _options.Library.BookBorrow.QueueName,
+            stoppingToken);
+
+        Subscribe<BookReturnedEvent>(
+            "book_return_consumer",
+            _options.Library.BookReturn.QueueName,
+            stoppingToken);
+
+        Subscribe<ReaderCreatedEvent>(
+            "reader_create_consumer",
+            _options.Library.ReaderCreate.QueueName,
+            stoppingToken);
+
+        Subscribe<ReaderClosedEvent>(
+            "reader_close_consumer",
+            _options.Library.ReaderClose.QueueName,
+            stoppingToken);
+
+        Subscribe<ReportCreateEvent>(
+            "report_create_consumer",
+            _options.Reports.QueueName,
+            stoppingToken);
     }
-    
+
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         foreach (var subscription in _subscriptions)
         {
             subscription.Dispose();
         }
-        
+
         _subscriptions.Clear();
-        
         await base.StopAsync(cancellationToken);
     }
-    
-    private void SubscribeToAllQueues(CancellationToken stoppingToken)
+
+    private void Subscribe<T>(
+        string subscriptionId,
+        string queueName,
+        CancellationToken stoppingToken)
     {
-        SubscribeToBookCreateQueue(stoppingToken);
-        SubscribeToBookArchiveQueue(stoppingToken);
-        SubscribeToBookBorrowQueue(stoppingToken);
-        SubscribeToBookReturnQueue(stoppingToken);
-        SubscribeToReaderCreateQueue(stoppingToken);
-        SubscribeToReaderCloseQueue(stoppingToken);
-        
-        SubscribeToReportsQueue(stoppingToken);
-    }
-    
-    private void SubscribeToBookCreateQueue(CancellationToken stoppingToken)
-    {
-        var subscription = _bus.PubSub.Subscribe<BookCreatedEvent>(
-            "book_create_consumer",
-            async message => await HandleLibraryEventAsync(message, stoppingToken),
-            cfg => cfg.WithQueueName(_options.Library.BookCreate.QueueName));
-        
-        _subscriptions.Add(subscription);
-    }
-    
-    private void SubscribeToBookArchiveQueue(CancellationToken stoppingToken)
-    {
-        var subscription = _bus.PubSub.Subscribe<BookArchivedEvent>(
-            "book_archive_consumer",
-            async message => await HandleLibraryEventAsync(message, stoppingToken),
-            cfg => cfg.WithQueueName(_options.Library.BookArchive.QueueName));
-        
-        _subscriptions.Add(subscription);
-    }
-    
-    private void SubscribeToBookBorrowQueue(CancellationToken stoppingToken)
-    {
-        var subscription = _bus.PubSub.Subscribe<BookBorrowedEvent>(
-            "book_borrow_consumer",
-            async message => await HandleLibraryEventAsync(message, stoppingToken),
-            cfg => cfg.WithQueueName(_options.Library.BookBorrow.QueueName));
-        
-        _subscriptions.Add(subscription);
-    }
-    
-    private void SubscribeToBookReturnQueue(CancellationToken stoppingToken)
-    {
-        var subscription = _bus.PubSub.Subscribe<BookReturnedEvent>(
-            "book_return_consumer",
-            async message => await HandleLibraryEventAsync(message, stoppingToken),
-            cfg => cfg.WithQueueName(_options.Library.BookReturn.QueueName));
-        
-        _subscriptions.Add(subscription);
-    }
-    
-    private void SubscribeToReaderCreateQueue(CancellationToken stoppingToken)
-    {
-        var subscription = _bus.PubSub.Subscribe<ReaderCreatedEvent>(
-            "reader_create_consumer",
-            async message => await HandleLibraryEventAsync(message, stoppingToken),
-            cfg => cfg.WithQueueName(_options.Library.ReaderCreate.QueueName));
-        
-        _subscriptions.Add(subscription);
-    }
-    
-    private void SubscribeToReaderCloseQueue(CancellationToken stoppingToken)
-    {
-        var subscription = _bus.PubSub.Subscribe<ReaderClosedEvent>(
-            "reader_close_consumer",
-            async message => await HandleLibraryEventAsync(message, stoppingToken),
-            cfg => cfg.WithQueueName(_options.Library.ReaderClose.QueueName));
-        
-        _subscriptions.Add(subscription);
-    }
-    
-    private void SubscribeToReportsQueue(CancellationToken stoppingToken)
-    {
-        var subscription = _bus.PubSub.Subscribe<ReportCreateEvent>(
-            "report_create_consumer",
-            async message => await HandleReportEventAsync(message, stoppingToken),
-            cfg => cfg.WithQueueName(_options.Reports.QueueName));
-        
+        var subscription = _bus.PubSub.Subscribe<T>(
+            subscriptionId,
+            (message, ct) => HandleMessageAsync(message, ct),
+            cfg => cfg.WithQueueName(queueName),
+            stoppingToken);
+
         _subscriptions.Add(subscription);
     }
 
-    private async Task HandleLibraryEventAsync(BaseLibraryEvent libraryEvent, CancellationToken stoppingToken)
+    private async Task HandleMessageAsync<T>(
+        T message,
+        CancellationToken cancellationToken)
     {
-        var scope = _serviceProvider.CreateScope();
-        var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
-        if (libraryEvent is { Source: "library-service" })
+        try
         {
-            var log = new ActivityLog
-            {
-                Event = libraryEvent,
-                EventDate = libraryEvent.OccurredOn,
-                EventType = libraryEvent.EventType
-            };
-            await reportService.WriteSystemActivityLogs(log);
+            using var scope = _serviceProvider.CreateScope();
+
+            var handler = scope.ServiceProvider
+                .GetRequiredService<IMessageHandler<T>>();
+
+            await handler.HandleAsync(message, cancellationToken);
         }
-        else
+        catch (Exception ex)
         {
-            _logger.LogError("Пришло невалидное сообщение лога события системы");
-        }
-    }
-    
-    private async Task HandleReportEventAsync(ReportCreateEvent reportEvent, CancellationToken stoppingToken)
-    {
-        var scope = _serviceProvider.CreateScope();
-        var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
-        if (reportEvent is { Source: "report-service" })
-        {
-            await reportService.GenerateReport(
-                reportEvent.Id, reportEvent.PeriodFrom, 
-                reportEvent.PeriodTo, reportEvent.EventTypes.ToArray());
-        }
-        else
-        {
-            _logger.LogError("Пришло невалидное сообщение от сервиса отчетов");
+            _logger.LogError(
+                ex,
+                "Ошибка обработки сообщения {MessageType}",
+                typeof(T).Name);
+
+            throw;
         }
     }
 }
