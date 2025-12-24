@@ -1,11 +1,13 @@
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
+using PracticalWork.Library.Abstractions.MessageBroker;
 using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Abstractions.Storage;
 using PracticalWork.Library.DTO.BaseDtos;
 using PracticalWork.Library.DTO.BookDtos;
 using PracticalWork.Library.DTO.LibraryDtos;
 using PracticalWork.Library.Enums;
+using PracticalWork.Library.Events;
 using PracticalWork.Library.Exceptions;
 using PracticalWork.Library.Helpers;
 using PracticalWork.Library.Models.BookModels;
@@ -21,7 +23,9 @@ public class LibraryService: ILibraryService
     private readonly IMinioService _minioService;
     private readonly ICacheService _cacheService;
     private readonly ICacheVersionService _cacheVersionService;
+    private readonly IMessageProducer _producer;
     private readonly BooksCacheOptions _cacheOptions;
+    private readonly MinioOptions _minioOptions;
     
     public LibraryService(IReaderRepository readerRepository, 
         IBookRepository bookRepository,
@@ -29,7 +33,9 @@ public class LibraryService: ILibraryService
         ICacheVersionService cacheVersionService,
         IMinioService minioService,
         ICacheService cacheService,
-        IOptionsMonitor<BooksCacheOptions> cacheOptions)
+        IMessageProducer producer,
+        IOptionsMonitor<BooksCacheOptions> cacheOptions,
+        IOptionsMonitor<MinioOptions> minioOptions)
     {
         _readerRepository = readerRepository;
         _bookRepository = bookRepository;
@@ -38,6 +44,8 @@ public class LibraryService: ILibraryService
         _cacheService = cacheService;
         _cacheVersionService = cacheVersionService;
         _cacheOptions = cacheOptions.CurrentValue;
+        _minioOptions = minioOptions.CurrentValue;
+        _producer = producer;
     }
     
     public async Task BorrowBook(Guid bookId, Guid readerId)
@@ -57,24 +65,31 @@ public class LibraryService: ILibraryService
         book.Status = BookStatus.Borrow;
         await _bookBorrowRepository.CreateBookBorrow(bookId, readerId, bookBorrow);
         await _bookRepository.UpdateBook(book, bookId);
-        await BookCacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
+        var message = new BookBorrowedEvent(bookId, readerId, bookBorrow.Book.Title, 
+            reader.FullName, bookBorrow.BorrowDate, bookBorrow.DueDate );
+        await _producer.ProduceBookBorrowAsync(message);
+        await CacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
     }
 
     public async Task ReturnBook(Guid bookId, Guid readerId)
     {
         var (id, bookBorrow) = await _bookBorrowRepository.GetBookBorrow(bookId, readerId);
+        var reader = await _readerRepository.GetReader(readerId);
         if (bookBorrow.Status != BookIssueStatus.Issued)
         {
             throw new LibraryServiceException("Книга уже возвращена");
         }
         bookBorrow.ReturnBookBorrow();
         await _bookBorrowRepository.UpdateReturnedBookBorrow(id, bookBorrow);
-        await BookCacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
+        var message = new BookReturnedEvent(bookId, readerId, bookBorrow.Book.Title, 
+            reader.FullName, bookBorrow.ReturnDate);
+        await _producer.ProduceBookReturnAsync(message);
+        await CacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
     }
 
     public async Task<(Guid bookId, Book book)> GetBookDetails(Guid bookId)
     {
-        var cacheCheckResult = await BookCacheManager.CheckCacheAsync<BookDetailsDto>(
+        var cacheCheckResult = await CacheManager.CheckCacheAsync<Book,BookDetailsDto>(
             _cacheVersionService,_cacheService,
             _cacheOptions.BookDetailsCacheOptions.Prefix, bookId,
             dto => new Book
@@ -99,14 +114,14 @@ public class LibraryService: ILibraryService
         {
             try
             {
-                bookFromDb.CoverImagePath = await _minioService.GetFileUrlAsync(bookFromDb.CoverImagePath);
+                bookFromDb.CoverImagePath = await _minioService.GetFileUrlAsync(_minioOptions.CoversBucketName, bookFromDb.CoverImagePath);
             }
             catch (Exception)
             {
                 throw new LibraryServiceException("Путь к обложке книги невалидный");
             }
         }
-        await BookCacheManager.WriteToCacheAsync(
+        await CacheManager.WriteToCacheAsync(
             _cacheVersionService, _cacheService,
             _cacheOptions.BookDetailsCacheOptions, bookId, [bookFromDb],
             b => new BookDetailsDto
@@ -133,7 +148,7 @@ public class LibraryService: ILibraryService
     public async Task<PaginationResponseBase<Book>> GetNonArchivedBooksPage(PaginationRequestBase request)
     {
         
-        var checkCacheResult = await BookCacheManager.CheckCacheAsync<LibraryBookDto>(
+        var checkCacheResult = await CacheManager.CheckCacheAsync<Book,LibraryBookDto>(
             _cacheVersionService,
             _cacheService,
             _cacheOptions.LibraryBooksCacheOptions.Prefix,
@@ -167,7 +182,7 @@ public class LibraryService: ILibraryService
         var booksFromDb = await _bookRepository
             .GetNonArchivedBooksPageWithIssuanceRecords(request);
         
-        await BookCacheManager.WriteToCacheAsync(_cacheVersionService, _cacheService,
+        await CacheManager.WriteToCacheAsync(_cacheVersionService, _cacheService,
             _cacheOptions.LibraryBooksCacheOptions, request, booksFromDb,
             book => new LibraryBookDto
             {

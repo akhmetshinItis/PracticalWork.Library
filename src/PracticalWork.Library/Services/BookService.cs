@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
+using PracticalWork.Library.Abstractions.MessageBroker;
 using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Abstractions.Storage;
 using PracticalWork.Library.DTO.BaseDtos;
 using PracticalWork.Library.DTO.BookDtos;
 using PracticalWork.Library.Enums;
+using PracticalWork.Library.Events;
 using PracticalWork.Library.Exceptions;
 using PracticalWork.Library.Helpers;
 using PracticalWork.Library.Models.BookModels;
@@ -18,6 +20,8 @@ public sealed class BookService : IBookService
     private readonly ICacheVersionService _cacheVersionService;
     private readonly BooksCacheOptions _cacheOptions;
     private readonly IMinioService _minioService;
+    private readonly MinioOptions _minioOptions;
+    private readonly IMessageProducer _producer;
 
     /// <summary>
     /// Конструктор
@@ -27,18 +31,24 @@ public sealed class BookService : IBookService
     /// <param name="minioService">Сервис минио</param>
     /// <param name="cacheVersionService">Сервис версионирования кеша</param>
     /// <param name="cacheOptions">Опции кеша для книг</param>
+    /// <param name="minioOptions">опции для минио</param>
+    /// <param name="producer">продюсер</param>
     public BookService(
         IBookRepository bookRepository,
         ICacheService cacheService,
         IMinioService minioService,
         ICacheVersionService cacheVersionService,
-        IOptionsMonitor<BooksCacheOptions> cacheOptions)
+        IOptionsMonitor<BooksCacheOptions> cacheOptions,
+        IOptionsMonitor<MinioOptions> minioOptions,
+        IMessageProducer producer)
     {
         _minioService = minioService;
         _bookRepository = bookRepository;
         _cacheService = cacheService;
         _cacheVersionService = cacheVersionService;
+        _producer = producer;
         _cacheOptions = cacheOptions.CurrentValue;
+        _minioOptions = minioOptions.CurrentValue;
     }
     
     /// <inheritdoc/> 
@@ -48,7 +58,13 @@ public sealed class BookService : IBookService
         try
         {
             var bookId = await _bookRepository.CreateBook(book);
-            
+            var message = new BookCreatedEvent(
+                bookId, book.Title,
+                book.Category.ToString(),
+                book.Authors.ToArray(),
+                book.Year);
+            await _producer.ProduceBookCreateAsync(message);
+            await CacheManager.InvalidateBookCacheAsync(_cacheVersionService, _cacheOptions);
             return bookId;
         }
         catch (Exception ex)
@@ -71,7 +87,7 @@ public sealed class BookService : IBookService
         
         await _bookRepository.UpdateBook(book, id);
         
-        await BookCacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
+        await CacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
     }
 
     /// <inheritdoc/> 
@@ -81,22 +97,24 @@ public sealed class BookService : IBookService
        book.Archive();
        
        await _bookRepository.UpdateBook(book, id);
-       
-       await BookCacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
-       
        var response = new BookArchive
        {
            Id = id,
            Title = book.Title,
            ArchivedAt = DateTime.UtcNow
        };
+       var message = new BookArchivedEvent(id, book.Title, 
+           "Вызван метод архивации книги", response.ArchivedAt);
+       await _producer.ProduceBookArchiveAsync(message);
+       await CacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
+       
        return response;
     }
 
     /// <inheritdoc />
     public async Task<PaginationResponseBase<Book>> GetBooks(GetBooksRequestModel requestModel)
     {
-        var cacheCheckResult = await BookCacheManager.CheckCacheAsync<BookListDto>(
+        var cacheCheckResult = await CacheManager.CheckCacheAsync<Book,BookListDto>(
             _cacheVersionService,_cacheService,
             _cacheOptions.BooksListCacheOptions.Prefix, requestModel,
             dto => new Book
@@ -119,7 +137,7 @@ public sealed class BookService : IBookService
         }
         var booksFromDb = await _bookRepository.GetBooks(requestModel);
 
-        await BookCacheManager.WriteToCacheAsync(
+        await CacheManager.WriteToCacheAsync(
             _cacheVersionService, _cacheService,
             _cacheOptions.BooksListCacheOptions, requestModel, booksFromDb,
             book => new BookListDto
@@ -152,14 +170,14 @@ public sealed class BookService : IBookService
         if (coverFile?.HasFile == true)
         {
             ValidateCover(coverFile);
-            await _minioService.UploadFileAsync(fileName, coverFile.Stream, coverFile.ContentType);
+            await _minioService.UploadFileAsync(_minioOptions.CoversBucketName, fileName, coverFile.Stream, coverFile.ContentType);
         }
 
         book.UpdateDetails(description, fileName);
 
         await _bookRepository.UpdateBook(book, id);
 
-        await BookCacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
+        await CacheManager.InvalidateBookCacheAsync(_cacheVersionService,_cacheOptions);
     }
 
     private void ValidateCover(UploadedFile file)

@@ -19,5 +19,7 @@ namespace PracticalWork.Library.Options
         /// Настройки кеша для деталей книг (book:details:{id})
         /// </summary>
         public CacheOptionsBase BookDetailsCacheOptions { get; set; }
+
+        public CacheOptionsBase ReportsCacheOptions { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Minio;
 using PracticalWork.Library.Abstractions.Services;
+using PracticalWork.Library.Options;
 
 namespace PracticalWork.Library.Data.Minio;
 

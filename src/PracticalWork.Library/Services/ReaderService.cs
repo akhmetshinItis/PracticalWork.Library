@@ -1,5 +1,7 @@
+using PracticalWork.Library.Abstractions.MessageBroker;
 using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Abstractions.Storage;
+using PracticalWork.Library.Events;
 using PracticalWork.Library.Exceptions;
 using PracticalWork.Library.Models.BookModels;
 using PracticalWork.Library.Models.ReaderModels;
@@ -9,9 +11,12 @@ namespace PracticalWork.Library.Services;
 public class ReaderService: IReaderService
 {
     private readonly IReaderRepository _readerRepository;
-    public ReaderService(IReaderRepository repository)
+    private readonly IMessageProducer _producer;
+    public ReaderService(IReaderRepository repository,
+        IMessageProducer producer)
     {
         _readerRepository = repository;
+        _producer = producer;
     }
     public async Task<Guid> CreateReader(Reader reader)
     {
@@ -21,6 +26,9 @@ public class ReaderService: IReaderService
         }
         reader.IsActive = true;
         var id = await _readerRepository.CreateReader(reader);
+        var message = new ReaderCreatedEvent(id, reader.FullName,
+            reader.PhoneNumber, reader.ExpiryDate, DateTime.UtcNow);
+        await _producer.ProduceReaderCreateAsync(message);
         return id;
     }
 
@@ -51,6 +59,9 @@ public class ReaderService: IReaderService
         readerWithBorrowBooks.IsActive = false;
         readerWithBorrowBooks.ExpiryDate = DateOnly.FromDateTime(DateTime.UtcNow);
         await _readerRepository.UpdateReader(id, readerWithBorrowBooks);
+        var message = new ReaderClosedEvent(id, readerWithBorrowBooks.FullName,
+            DateTime.UtcNow, "Вызван метод закрытия карточки");
+        await _producer.ProduceReaderCloseAsync(message);
         return (false, readerWithBorrowBooks.BorrowBooks);
     }
 

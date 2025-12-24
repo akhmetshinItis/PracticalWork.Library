@@ -5,7 +5,7 @@ using PracticalWork.Library.Options;
 
 namespace PracticalWork.Library.Helpers;
 
-public static class BookCacheManager
+public static class CacheManager
 {
       /// <summary>
     /// Инвалидация кеша связанных данных при изменении книги.
@@ -29,7 +29,15 @@ public static class BookCacheManager
             await cacheVersionService.IncrementVersionAsync(cacheOptions.BookDetailsCacheOptions.Prefix);
         }
     }
-    
+      
+    public static async Task InvalidateReportsCacheAsync(ICacheVersionService cacheVersionService, BooksCacheOptions cacheOptions)
+    {
+        if (cacheOptions?.ReportsCacheOptions?.Prefix != null)
+        {
+            await cacheVersionService.IncrementVersionAsync(cacheOptions.ReportsCacheOptions.Prefix);
+        }
+    }
+
     /// <summary>
     /// Проверяет кэш на наличие содержимого по типу
     /// </summary>
@@ -38,10 +46,11 @@ public static class BookCacheManager
     /// <param name="prefix">префикс кэша</param>
     /// <param name="parameter">параметр клюсча кэша</param>
     /// <param name="map">делегат маппинга</param>
-    /// <typeparam name="T">тип дто книги</typeparam>
+    /// <typeparam name="TCache">тип объекта кэша</typeparam>
+    /// <typeparam name="TModel">тип объекта доменной модели</typeparam>
     /// <returns>список книг</returns>
-    public static async Task<List<Book>> CheckCacheAsync<T>(ICacheVersionService cacheVersionService, ICacheService cacheService,
-        string prefix, object parameter, Func<T, Book> map)
+    public static async Task<List<TModel>> CheckCacheAsync<TModel,TCache>(ICacheVersionService cacheVersionService, ICacheService cacheService,
+        string prefix, object parameter, Func<TCache, TModel> map)
     {
         if (prefix == null) return [];
         var version = await cacheVersionService.GetVersionAsync(prefix);
@@ -53,7 +62,7 @@ public static class BookCacheManager
                 parameter
             });
 
-        var cachedBooks = await cacheService.GetAsync<List<T>>(cacheKey);
+        var cachedBooks = await cacheService.GetAsync<List<TCache>>(cacheKey);
         if (cachedBooks == null || cachedBooks.Count == 0) return [];
         var books = cachedBooks
             .Select(map)
@@ -61,7 +70,7 @@ public static class BookCacheManager
 
         return books;
     }
-    
+
     /// <summary>
     /// записивает в кэш сериализованные объекты
     /// </summary>
@@ -69,11 +78,12 @@ public static class BookCacheManager
     /// <param name="cacheService">сервис кэша</param>
     /// <param name="option">опция кэша</param>
     /// <param name="parameter">параметр ключа кэша</param>
-    /// <param name="books">список книг для преобразования</param>
+    /// <param name="modelList">список объектов для маппинга</param>
     /// <param name="map">делегат маппинга</param>
-    /// <typeparam name="T">тип дто книги</typeparam>
-    public static async Task WriteToCacheAsync<T>(ICacheVersionService cacheVersionService, ICacheService cacheService,
-        CacheOptionsBase option, object parameter, IReadOnlyList<Book> books, Func<Book, T> map)
+    /// <typeparam name="TCache">тип объекта кэша</typeparam>
+    /// <typeparam name="TModel">тип объекта доменной модели</typeparam>
+    public static async Task WriteToCacheAsync<TModel, TCache>(ICacheVersionService cacheVersionService, ICacheService cacheService,
+        CacheOptionsBase option, object parameter, IReadOnlyList<TModel> modelList, Func<TModel, TCache> map)
     {
         if (option.Prefix != null)
         {
@@ -86,7 +96,7 @@ public static class BookCacheManager
                     parameter
                 });
 
-            var dto = books
+            var dto = modelList
                 .Select(map)
                 .ToList();
 

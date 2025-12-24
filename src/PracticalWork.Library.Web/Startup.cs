@@ -8,6 +8,8 @@ using PracticalWork.Library.Data.PostgreSql;
 using PracticalWork.Library.Exceptions;
 using PracticalWork.Library.Web.Configuration;
 using System.Text.Json.Serialization;
+using PracticalWork.Library.Data.Reports.PostgreSql;
+using PracticalWork.Library.MessageBroker;
 
 namespace PracticalWork.Library.Web;
 
@@ -27,13 +29,28 @@ public class Startup
     {
         services.AddPostgreSqlStorage(cfg =>
         {
-            var npgsqlDataSource = new NpgsqlDataSourceBuilder(Configuration["App:DbConnectionString"])
+            var connectionString = Configuration
+                .GetSection("App")
+                .GetConnectionString(nameof(AppDbContext));
+            var npgsqlDataSource = new NpgsqlDataSourceBuilder(connectionString)
                 .EnableDynamicJson()
                 .Build();
 
             cfg.UseNpgsql(npgsqlDataSource);
         });
+        
+        services.AddReportsPostgreSqlStorage(cfg =>
+            {
+                var connectionString = Configuration
+                    .GetSection("App")
+                    .GetConnectionString(nameof(ReportsDbContext));
+                var npgsqlDataSource = new NpgsqlDataSourceBuilder(connectionString)
+                    .EnableDynamicJson()
+                    .Build();
 
+                cfg.UseNpgsql(npgsqlDataSource);
+            }    
+        );
         services.AddMvc(opt =>
             {
                 opt.Filters.Add<DomainExceptionFilter<AppException>>();
@@ -52,7 +69,10 @@ public class Startup
             c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "PracticalWork.Library.Contracts.xml"));
             c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "PracticalWork.Library.Controllers.xml"));
         });
-
+        
+        services
+            .AddMessageBroker(Configuration)
+            .AddProducers();
         services.AddDomain();
         services.AddCache(Configuration);
         services.AddMinioFileStorage(Configuration);
