@@ -5,6 +5,7 @@ using PracticalWork.Library.Events;
 
 namespace PracticalWork.Library.MessageBroker.Handlers
 {
+    /// <inheritdoc />
     public class ReportEventHandler : IMessageHandler<ReportCreateEvent>
     {
         private readonly IServiceProvider _serviceProvider;

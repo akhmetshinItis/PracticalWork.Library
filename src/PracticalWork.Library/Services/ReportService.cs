@@ -61,7 +61,6 @@ public class ReportService: IReportService
             TotalCount = logs.Item2,
             PageNumber = model.PageNumber,
             PageSize = model.PageSize,
-            PageCount = (int)Math.Ceiling(logs.Item2 / (double)model.PageSize),
         };
     }
 

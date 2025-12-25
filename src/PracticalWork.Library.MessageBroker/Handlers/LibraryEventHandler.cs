@@ -7,6 +7,7 @@ using PracticalWork.Library.Models.ReportModels;
 
 namespace PracticalWork.Library.MessageBroker.Handlers
 {
+    /// <inheritdoc />
     public class LibraryEventHandler : IMessageHandler<BaseLibraryEvent>
     {
         private readonly IServiceProvider _serviceProvider;

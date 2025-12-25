@@ -179,7 +179,6 @@ public class LibraryService: ILibraryService
                 TotalCount = checkCacheResult.Count,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
-                PageCount = (int)Math.Ceiling(checkCacheResult.Count / (double)request.PageSize),
             };
         }
         
@@ -211,7 +210,6 @@ public class LibraryService: ILibraryService
             TotalCount = booksFromDb.Item2,
             PageNumber = request.PageNumber,
             PageSize = request.PageSize,
-            PageCount = (int)Math.Ceiling(booksFromDb.Item2 / (double)request.PageSize),
         };
     }
 }

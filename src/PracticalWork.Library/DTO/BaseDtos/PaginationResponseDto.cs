@@ -19,7 +19,10 @@ namespace PracticalWork.Library.DTO.BaseDtos
         /// <summary>
         /// Количество страниц
         /// </summary>
-        public int PageCount { get; set; } // TODO Переделать формулу в экстеншн метод, когда будет время
+        public int PageCount
+            => PageSize <= 0
+                ? 0
+                : (int)Math.Ceiling(TotalCount / (double)PageSize);
         
         /// <summary>
         /// Номер страницы

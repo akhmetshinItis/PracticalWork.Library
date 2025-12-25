@@ -136,7 +136,6 @@ public sealed class BookService : IBookService
                 TotalCount = cacheCheckResult.Count,
                 PageNumber = requestModel.PageNumber,
                 PageSize = requestModel.PageSize,
-                PageCount = (int)Math.Ceiling(cacheCheckResult.Count / (double)requestModel.PageSize),
             };
         }
         var booksFromDb = await _bookRepository.GetBooks(requestModel);
@@ -161,7 +160,6 @@ public sealed class BookService : IBookService
             TotalCount = booksFromDb.Item2,
             PageNumber = requestModel.PageNumber,
             PageSize = requestModel.PageSize,
-            PageCount = (int)Math.Ceiling(cacheCheckResult.Count / (double)requestModel.PageSize),
         };
     }
     
