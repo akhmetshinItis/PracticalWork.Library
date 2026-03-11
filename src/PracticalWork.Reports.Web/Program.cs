@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
-using PracticalWork.Library.Web.Configuration;
+using PracticalWork.Reports.Web.Configuration;
 
-namespace PracticalWork.Library.Web;
+namespace PracticalWork.Reports.Web;
 
 [UsedImplicitly]
 public class Program
@@ -87,7 +87,7 @@ public class Program
         SystemLogger.LogError(ex, "Unhandled exception in global handler");
     }
 
-    private static void OnTaskSchedulerOnUnobservedTaskException(object sender,
+    private static void OnTaskSchedulerOnUnobservedTaskException(object? sender,
         UnobservedTaskExceptionEventArgs eventArgs)
     {
         eventArgs.SetObserved();

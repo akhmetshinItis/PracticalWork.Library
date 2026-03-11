@@ -5,12 +5,12 @@ using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Contracts.v1.Reports.Request;
 using PracticalWork.Library.Controllers.Mappers.v1;
 
-namespace PracticalWork.Library.Controllers.Api.v1;
+namespace PracticalWork.Reports.Web.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/reports")]
-public sealed class ReportController: Controller
+public sealed class ReportController : Controller
 {
     private readonly IReportService _reportService;
 
@@ -18,13 +18,11 @@ public sealed class ReportController: Controller
     {
         _reportService = reportService;
     }
-    
+
     /// <summary>
     /// Получение страницы записей о событиях системы
     /// </summary>
-    /// <param name="request">объект пагинации</param>
-    /// <returns>страница с записями</returns>
-    [HttpPost("/activity")]
+    [HttpPost("activity")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -35,13 +33,11 @@ public sealed class ReportController: Controller
             request.ToGetActivityLogsRequestModel());
         return Ok(result.ToActivityLogsPaginationResponse());
     }
-    
+
     /// <summary>
     /// Создать отчет csv
     /// </summary>
-    /// <param name="request">отчет с фильтрами</param>
-    /// <returns>created</returns>
-    [HttpPost("/generate")]
+    [HttpPost("generate")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -49,17 +45,16 @@ public sealed class ReportController: Controller
     public async Task<IActionResult> CreateReportCsv(ReportCreateRequest request)
     {
         var report = await _reportService.CreateReport(
-            request.PeriodFrom, 
-            request.PeriodTo, 
+            request.PeriodFrom,
+            request.PeriodTo,
             request.EventTypes.ToArray());
         return Ok(report.ToReportCreateResponse());
     }
-    
+
     /// <summary>
     /// Получить созданные отчеты
     /// </summary>
-    /// <returns>информация об отчетах</returns>
-    [HttpGet("/")]
+    [HttpGet]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -69,13 +64,11 @@ public sealed class ReportController: Controller
         var result = await _reportService.GetListOfReadyReports();
         return Ok(result.Select(r => r.ToReportResponse()));
     }
-    
+
     /// <summary>
     /// Получение ссылки на файл отчета
     /// </summary>
-    /// <param name="reportName">название файла отчета</param>
-    /// <returns>url отчета</returns>
-    [HttpGet("/{reportName}/download")]
+    [HttpGet("{reportName}/download")]
     [Produces("text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -33,17 +33,6 @@ public interface IReportService
     Task<Report> CreateReport(DateOnly? eventDateFrom, DateOnly? eventDateTo, string[] eventTypes);
     
     /// <summary>
-    /// Сгенерировать отчет
-    /// </summary>
-    /// <param name="reportId">Идентификатор отчета</param>
-    /// <param name="periodFrom">Фильтр на дату начала событий системы</param>
-    /// <param name="periodTo">Фильтр на дату окончания событий системы</param>
-    /// <param name="eventTypes">Фильтр на типы событий</param>
-    /// <returns>задача</returns>
-    Task GenerateReport(Guid reportId, DateOnly? periodFrom,
-        DateOnly? periodTo, string[] eventTypes);
-    
-    /// <summary>
     /// Получить список готовых отчетов
     /// </summary>
     /// <returns>Список готовых отчетов</returns>

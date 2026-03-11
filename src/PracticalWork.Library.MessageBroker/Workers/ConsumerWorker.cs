@@ -68,10 +68,6 @@ public class ConsumerWorker : BackgroundService
             _options.Library.ReaderClose.QueueName,
             stoppingToken);
 
-        Subscribe<ReportCreateEvent>(
-            "report_create_consumer",
-            _options.Reports.QueueName,
-            stoppingToken);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

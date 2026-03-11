@@ -38,9 +38,6 @@ public static class Entry
         serviceCollection.AddScoped<IMessageHandler<ReaderClosedEvent>, LibraryEventHandler>();
         serviceCollection.AddScoped<IMessageHandler<ReaderCreatedEvent>, LibraryEventHandler>();
 
-        serviceCollection.AddScoped<IMessageHandler<ReportCreateEvent>, ReportEventHandler>();
-
-        
         return serviceCollection;
     }
     

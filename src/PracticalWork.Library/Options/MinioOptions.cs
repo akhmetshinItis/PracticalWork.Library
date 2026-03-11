@@ -11,6 +11,11 @@ public class MinioOptions
     public string Endpoint { get; set; }
 
     /// <summary>
+    /// Публичный URL Minio для presigned ссылок (например http://localhost:9003)
+    /// </summary>
+    public string PublicEndpoint { get; set; }
+
+    /// <summary>
     /// Ключ доступа к Minio
     /// </summary>
     public string AccessKey { get; set; }

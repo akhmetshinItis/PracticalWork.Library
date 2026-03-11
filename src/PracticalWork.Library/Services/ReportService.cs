@@ -19,7 +19,6 @@ public class ReportService: IReportService
     private readonly IReportRepository _reportRepository;
     private readonly IMessageProducer _producer;
     private readonly IMinioService _minioService;
-    private readonly IReportGenerateService _reportGenerateService;
     private readonly ICacheService _cacheService;
     private readonly ICacheVersionService _cacheVersionService;
     private readonly MinioOptions _minioOptions;
@@ -31,12 +30,10 @@ public class ReportService: IReportService
         ICacheService cacheService,
         IMinioService minioService,
         IOptionsMonitor<MinioOptions> minioOptions,
-        IReportGenerateService reportGenerateService,
         ICacheVersionService cacheVersionService, 
         IOptionsMonitor<BooksCacheOptions> cacheOptions)
     {
         _activityLogRepository = activityLogRepository;
-        _reportGenerateService = reportGenerateService;
         _reportRepository = reportRepository;
         _cacheService = cacheService;
         _producer = producer;
@@ -77,31 +74,6 @@ public class ReportService: IReportService
         await _producer.ProduceReportCreateAsync(message);
         await CacheManager.InvalidateReportsCacheAsync(_cacheVersionService, _cacheOptions);
         return report;
-    }
-
-    public async Task GenerateReport(Guid reportId, DateOnly? periodFrom, 
-        DateOnly? periodTo, string[] eventTypes)
-    {
-        var report = await _reportRepository.GetReportById(reportId);
-        var logs = await _activityLogRepository.GetLogsAsync(
-            periodFrom, periodTo, eventTypes);
-        try
-        {
-            var reportResult = _reportGenerateService.GenerateReport(reportId, logs.Item1);
-            await _minioService.UploadFileAsync(_minioOptions.ReportsBucketName,
-                reportResult.FileName, reportResult.Content, reportResult.ContentType);
-            var fileName = reportResult.FileName.Split('/')[^1];
-            report.MarkAsGenerated(fileName);
-            await _reportRepository.UpdateReport(reportId,report);
-            await CacheManager.InvalidateReportsCacheAsync(_cacheVersionService, _cacheOptions);
-        }
-        catch (Exception)
-        {
-            report.Status = ReportStatus.Error;
-            await _reportRepository.UpdateReport(reportId,report);
-            await CacheManager.InvalidateReportsCacheAsync(_cacheVersionService, _cacheOptions);
-            throw;
-        }
     }
 
     public async Task<IReadOnlyList<Report>> GetListOfReadyReports()

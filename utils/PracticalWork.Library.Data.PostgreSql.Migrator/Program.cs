@@ -22,6 +22,7 @@ public class Program
         {
             Configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", false)
+                .AddEnvironmentVariables()
                 .Build();
 
             await MigrateDatabase();

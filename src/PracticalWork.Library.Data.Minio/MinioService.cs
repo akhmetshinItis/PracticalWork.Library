@@ -8,9 +8,10 @@ using PracticalWork.Library.Options;
 namespace PracticalWork.Library.Data.Minio;
 
  /// <inheritdoc />
- public class MinioService : IMinioService
+public class MinioService : IMinioService
 {
     private readonly IMinioClient _minioClient;
+    private readonly IMinioClient _presignClient;
     private readonly MinioOptions _minioOptions;
 
     public MinioService(IOptionsMonitor<MinioOptions> minioOptions)
@@ -21,6 +22,7 @@ namespace PracticalWork.Library.Data.Minio;
             .WithCredentials(_minioOptions.AccessKey, _minioOptions.SecretKey)
             .WithSSL(false)
             .Build();
+        _presignClient = BuildPresignClient(_minioOptions);
     }
 
     public async Task UploadFileAsync(string bucket, string fileName, Stream fileStream, string contentType,
@@ -54,9 +56,7 @@ namespace PracticalWork.Library.Data.Minio;
             .WithObject(fileName)
             .WithExpiry(expiryInSeconds);
 
-        var url = await _minioClient.PresignedGetObjectAsync(args);
-
-        return url;
+        return await _presignClient.PresignedGetObjectAsync(args);
     }
     
     private async Task CheckExistingAsync(string bucket, string fileName)
@@ -75,5 +75,36 @@ namespace PracticalWork.Library.Data.Minio;
         {
             throw new FileNotFoundException($"Бакет {bucket} не существует");
         }
+    }
+    
+    private static IMinioClient BuildPresignClient(MinioOptions options)
+    {
+        if (string.IsNullOrWhiteSpace(options.PublicEndpoint))
+        {
+            return new MinioClient()
+                .WithEndpoint(options.Endpoint)
+                .WithCredentials(options.AccessKey, options.SecretKey)
+                .WithSSL(false)
+                .Build();
+        }
+
+        if (Uri.TryCreate(options.PublicEndpoint, UriKind.Absolute, out var publicUri))
+        {
+            var hostPort = publicUri.IsDefaultPort
+                ? publicUri.Host
+                : $"{publicUri.Host}:{publicUri.Port}";
+
+            return new MinioClient()
+                .WithEndpoint(hostPort)
+                .WithCredentials(options.AccessKey, options.SecretKey)
+                .WithSSL(string.Equals(publicUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+                .Build();
+        }
+
+        return new MinioClient()
+            .WithEndpoint(options.PublicEndpoint)
+            .WithCredentials(options.AccessKey, options.SecretKey)
+            .WithSSL(false)
+            .Build();
     }
 }
