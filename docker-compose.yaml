@@ -283,7 +283,7 @@ services:
     ports:
       - "5438:5432"
     volumes:
-      - postgres_library_data:/var/lib/postgresql/data
+      - postgres_library_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -302,7 +302,7 @@ services:
     ports:
       - "5439:5432"
     volumes:
-      - postgres_reports_data:/var/lib/postgresql/data
+      - postgres_reports_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
