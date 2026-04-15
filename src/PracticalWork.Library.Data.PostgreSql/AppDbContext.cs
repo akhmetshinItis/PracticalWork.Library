@@ -80,4 +80,18 @@ public sealed class AppDbContext : DbContext
     /// </summary>
     internal DbSet<BookBorrowEntity> BookBorrows { get; set; }
 
+    /// <summary>
+    /// Набор сущностей логов уведомлений
+    /// </summary>
+    internal DbSet<NotificationLogEntity> NotificationLogs { get; set; }
+
+    /// <summary>
+    /// Набор сущностей логов архивации
+    /// </summary>
+    internal DbSet<ArchiveLogEntity> ArchiveLogs { get; set; }
+
+    /// <summary>
+    /// Набор сущностей метаданных еженедельных отчетов
+    /// </summary>
+    internal DbSet<WeeklyReportMetadataEntity> WeeklyReportMetadata { get; set; }
 }

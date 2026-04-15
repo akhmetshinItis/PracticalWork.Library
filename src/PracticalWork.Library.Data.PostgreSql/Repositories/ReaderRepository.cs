@@ -23,6 +23,7 @@ public class ReaderRepository: IReaderRepository
         {
             FullName = reader.FullName,
             PhoneNumber = reader.PhoneNumber,
+            Email = reader.Email,
             ExpiryDate = reader.ExpiryDate,
             IsActive = reader.IsActive,
             CreatedAt = DateTime.UtcNow,
@@ -49,6 +50,7 @@ public class ReaderRepository: IReaderRepository
             ExpiryDate = reader.ExpiryDate,
             IsActive = reader.IsActive,
             PhoneNumber = reader.PhoneNumber,
+            Email = reader.Email,
         };
     }
     /// <inheritdoc />
@@ -57,6 +59,7 @@ public class ReaderRepository: IReaderRepository
         var readerEntity = await _appDbContext.Readers.FindAsync(id) ?? throw new EntityNotFoundException<Reader>(id);
         readerEntity.FullName = reader.FullName;
         readerEntity.PhoneNumber = reader.PhoneNumber;
+        readerEntity.Email = reader.Email;
         readerEntity.ExpiryDate = reader.ExpiryDate;
         readerEntity.IsActive = reader.IsActive;
         _appDbContext.Readers.Update(readerEntity);
@@ -74,7 +77,9 @@ public class ReaderRepository: IReaderRepository
         {
             FullName = readerEntity.FullName,
             PhoneNumber = readerEntity.PhoneNumber,
+            Email = readerEntity.Email,
             ExpiryDate = readerEntity.ExpiryDate,
+            IsActive = readerEntity.IsActive,
             BorrowBooks = readerEntity.BorrowedRecords
                 .Select(b => b.Book.ToBook())
                 .ToList()

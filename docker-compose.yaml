@@ -41,6 +41,13 @@ services:
       App__RabbitMQ__Reports__QueueName: reports.queue
       App__RabbitMQ__Reports__Exchange: reports.exchange
       App__RabbitMQ__Reports__RoutingKey: reports.create.key
+      App__Email__SmtpServer: smtp4dev
+      App__Email__SmtpPort: 25
+      App__Email__UseSsl: false
+      App__Email__SenderName: Библиотека
+      App__Email__SenderEmail: noreply@library.local
+      App__Email__AdminEmails__0: admin1@library.local
+      App__Email__AdminEmails__1: admin2@library.local
     ports:
       - "8081:8080"
     depends_on:
@@ -55,6 +62,8 @@ services:
       minio:
         condition: service_started
       rabbitmq:
+        condition: service_started
+      smtp4dev:
         condition: service_started
     networks:
       - library-net
@@ -265,6 +274,7 @@ services:
       - redis
       - minio
       - rabbitmq
+      - smtp4dev
       - migrator
       - library-web
       - reports-web
@@ -359,6 +369,15 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - library-net
+
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    container_name: library-smtp4dev
+    ports:
+      - "2525:25"
+      - "5005:80"
     networks:
       - library-net
 

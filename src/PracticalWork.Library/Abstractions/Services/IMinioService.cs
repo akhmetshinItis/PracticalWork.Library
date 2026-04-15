@@ -24,4 +24,9 @@ public interface IMinioService
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>URL файла</returns>
     Task<string> GetFileUrlAsync(string bucket, string fileName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Удалить файл из bucket.
+    /// </summary>
+    Task RemoveFileAsync(string bucket, string fileName, CancellationToken cancellationToken = default);
 }

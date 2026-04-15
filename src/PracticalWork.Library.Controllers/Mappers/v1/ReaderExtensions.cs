@@ -18,6 +18,7 @@ public static class ReaderExtensions
         {
             FullName = createReaderRequest.FullName,
             PhoneNumber = createReaderRequest.PhoneNumber,
+            Email = createReaderRequest.Email,
             ExpiryDate = createReaderRequest.ExpiryDate,
         };
 }

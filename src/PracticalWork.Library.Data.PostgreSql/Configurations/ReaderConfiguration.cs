@@ -17,6 +17,10 @@ internal sealed class ReaderConfiguration : EntityConfigurationBase<ReaderEntity
             .HasMaxLength(12)
             .IsRequired();
 
+        builder.Property(p => p.Email)
+            .HasMaxLength(256)
+            .IsRequired();
+
         builder.HasMany(c => c.BorrowedRecords)
             .WithOne()
             .HasForeignKey(p => p.ReaderId);

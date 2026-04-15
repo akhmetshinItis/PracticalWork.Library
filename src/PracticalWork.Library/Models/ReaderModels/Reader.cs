@@ -19,6 +19,11 @@ public sealed class Reader
     public string PhoneNumber { get; set; }
 
     /// <summary>
+    /// Email адрес
+    /// </summary>
+    public string Email { get; set; }
+
+    /// <summary>
     /// Дата окончания действия карточки
     /// </summary>
     public DateOnly ExpiryDate { get; set; }

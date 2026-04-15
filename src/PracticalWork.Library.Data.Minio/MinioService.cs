@@ -58,6 +58,16 @@ public class MinioService : IMinioService
 
         return await _presignClient.PresignedGetObjectAsync(args);
     }
+
+    public async Task RemoveFileAsync(string bucket, string fileName, CancellationToken cancellationToken = default)
+    {
+        await CheckExistingAsync(bucket, fileName);
+        await _minioClient.RemoveObjectAsync(
+            new RemoveObjectArgs()
+                .WithBucket(bucket)
+                .WithObject(fileName),
+            cancellationToken);
+    }
     
     private async Task CheckExistingAsync(string bucket, string fileName)
     {

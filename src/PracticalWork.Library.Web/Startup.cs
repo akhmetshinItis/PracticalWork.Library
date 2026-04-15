@@ -1,15 +1,24 @@
 ﻿using JetBrains.Annotations;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PracticalWork.Library.Cache.Redis;
+using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Controllers;
 using PracticalWork.Library.Data.Minio;
 using PracticalWork.Library.Data.PostgreSql;
 using PracticalWork.Library.Exceptions;
+using PracticalWork.Library.Options;
 using PracticalWork.Library.Web.Configuration;
 using System.Text.Json.Serialization;
 using PracticalWork.Library.Data.Reports.PostgreSql;
 using PracticalWork.Library.MessageBroker;
+using PracticalWork.Library.Web.Jobs.Archive;
+using PracticalWork.Library.Web.Jobs.Common;
+using PracticalWork.Library.Web.Jobs.Notifications;
+using PracticalWork.Library.Web.Jobs.Reports;
+using PracticalWork.Library.Web.Services.Email;
 
 namespace PracticalWork.Library.Web;
 
@@ -69,6 +78,46 @@ public class Startup
             c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "PracticalWork.Library.Contracts.xml"));
             c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "PracticalWork.Library.Controllers.xml"));
         });
+
+        services.AddOptions<EmailSettings>()
+            .Bind(Configuration.GetSection("App:Email"))
+            .Validate(settings =>
+                    !string.IsNullOrWhiteSpace(settings.SmtpServer)
+                    && settings.SmtpPort > 0
+                    && !string.IsNullOrWhiteSpace(settings.SenderEmail),
+                "Некорректная конфигурация App:Email")
+            .ValidateOnStart();
+
+        services.AddOptions<JobSettings>()
+            .Bind(Configuration.GetSection("App:Jobs"))
+            .ValidateOnStart();
+
+        services.AddOptions<ArchiveSettings>()
+            .Bind(Configuration.GetSection("App:Archive"))
+            .ValidateOnStart();
+
+        services.AddOptions<EmailTemplateSettings>()
+            .Bind(Configuration.GetSection("App:EmailTemplates"))
+            .ValidateOnStart();
+
+        var appDbConnectionString = Configuration
+            .GetSection("App")
+            .GetConnectionString(nameof(AppDbContext));
+
+        services.AddHangfire(hangfire =>
+            hangfire
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(appDbConnectionString)));
+        services.AddHangfireServer();
+
+        services.AddScoped<EmailTemplateRenderer>();
+        services.AddScoped<IEmailService, MailKitEmailService>();
+        services.AddScoped<ReturnReminderJob>();
+        services.AddScoped<WeeklyAdminReportJob>();
+        services.AddScoped<ArchiveOldBooksJob>();
+        services.AddSingleton<IJobManagementService, HangfireJobManagementService>();
+        services.AddHostedService<HangfireRecurringJobsHostedService>();
         
         services
             .AddMessageBroker(Configuration)
@@ -85,6 +134,7 @@ public class Startup
         app.UsePathBase(new PathString(_basePath));
 
         app.UseRouting();
+        app.UseHangfireDashboard("/hangfire");
 
         app.UseEndpoints(endpoints =>
         {
