@@ -13,9 +13,9 @@ public sealed class ArchiveLogEntity : EntityBase
     public Guid JobRunId { get; set; }
 
     /// <summary>
-    /// Идентификатор книги, если лог относится к книге.
+    /// Идентификатор книги.
     /// </summary>
-    public Guid? BookId { get; set; }
+    public Guid BookId { get; set; }
 
     /// <summary>
     /// Название книги.

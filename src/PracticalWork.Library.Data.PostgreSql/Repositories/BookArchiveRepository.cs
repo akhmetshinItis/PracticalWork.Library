@@ -55,10 +55,25 @@ public sealed class BookArchiveRepository : IBookArchiveRepository
     }
 
     /// <inheritdoc />
-    public async Task AddArchiveLogs(
+    public async Task SaveArchiveProcessingResult(
+        ArchiveJobRun jobRun,
         IReadOnlyCollection<ArchiveBookLogEntry> logs,
         CancellationToken cancellationToken = default)
     {
+        var jobRunEntity = new ArchiveJobRunEntity
+        {
+            Id = jobRun.Id,
+            ThresholdDate = jobRun.ThresholdDate,
+            MaxBooksPerRun = jobRun.MaxBooksPerRun,
+            ProcessedCount = jobRun.ProcessedCount,
+            ArchivedCount = jobRun.ArchivedCount,
+            SkippedCount = jobRun.SkippedCount,
+            FailedCount = jobRun.FailedCount,
+            StartedAt = jobRun.StartedAt,
+            CompletedAt = jobRun.CompletedAt,
+            DurationMs = jobRun.DurationMs
+        };
+
         var entities = logs
             .Select(log => new ArchiveLogEntity
             {
@@ -71,6 +86,7 @@ public sealed class BookArchiveRepository : IBookArchiveRepository
             })
             .ToList();
 
+        await _appDbContext.ArchiveJobRuns.AddAsync(jobRunEntity, cancellationToken);
         await _appDbContext.ArchiveLogs.AddRangeAsync(entities, cancellationToken);
         await _appDbContext.SaveChangesAsync(cancellationToken);
     }

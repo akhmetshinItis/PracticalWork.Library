@@ -94,6 +94,11 @@ public sealed class AppDbContext : DbContext
     internal DbSet<ArchiveLogEntity> ArchiveLogs { get; set; }
 
     /// <summary>
+    /// Набор сущностей запусков архивации.
+    /// </summary>
+    internal DbSet<ArchiveJobRunEntity> ArchiveJobRuns { get; set; }
+
+    /// <summary>
     /// Набор сущностей метаданных еженедельных отчетов
     /// </summary>
     internal DbSet<WeeklyReportMetadataEntity> WeeklyReportMetadata { get; set; }

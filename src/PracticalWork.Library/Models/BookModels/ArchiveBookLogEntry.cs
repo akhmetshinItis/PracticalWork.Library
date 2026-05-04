@@ -11,14 +11,14 @@ public sealed class ArchiveBookLogEntry
     public Guid JobRunId { get; init; }
 
     /// <summary>
-    /// Идентификатор книги, если лог относится к конкретной книге.
+    /// Идентификатор книги.
     /// </summary>
-    public Guid? BookId { get; init; }
+    public Guid BookId { get; init; }
 
     /// <summary>
     /// Название книги.
     /// </summary>
-    public string BookTitle { get; init; }
+    public required string BookTitle { get; init; }
 
     /// <summary>
     /// Итог обработки.

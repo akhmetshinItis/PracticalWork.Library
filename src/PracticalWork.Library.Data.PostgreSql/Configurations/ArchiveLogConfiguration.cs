@@ -15,7 +15,8 @@ internal sealed class ArchiveLogConfiguration : EntityConfigurationBase<ArchiveL
             .IsRequired();
 
         builder.Property(p => p.BookTitle)
-            .HasMaxLength(500);
+            .HasMaxLength(500)
+            .IsRequired();
 
         builder.Property(p => p.Reason)
             .HasMaxLength(1024);

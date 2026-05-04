@@ -74,10 +74,11 @@ namespace PracticalWork.Library.Data.PostgreSql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("BookId")
+                    b.Property<Guid>("BookId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("BookTitle")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
@@ -111,6 +112,54 @@ namespace PracticalWork.Library.Data.PostgreSql.Migrations
                     b.HasIndex("JobRunId");
 
                     b.ToTable("ArchiveLogs");
+                });
+
+            modelBuilder.Entity("PracticalWork.Library.Data.PostgreSql.Entities.ArchiveJobRunEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ArchivedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<long>("DurationMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("FailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxBooksPerRun")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProcessedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SkippedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("ThresholdDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StartedAt");
+
+                    b.ToTable("ArchiveJobRuns");
                 });
 
             modelBuilder.Entity("PracticalWork.Library.Data.PostgreSql.Entities.BookBorrowEntity", b =>

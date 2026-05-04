@@ -29,6 +29,8 @@ public sealed class BookArchiveProcessingService : IBookArchiveProcessingService
         int maxBooks,
         CancellationToken cancellationToken = default)
     {
+        var runId = Guid.NewGuid();
+        var startTime = _timeProvider.GetUtcNow().UtcDateTime;
         var candidates = await _bookArchiveRepository.GetArchiveCandidates(
             thresholdDate,
             maxBooks,
@@ -36,15 +38,21 @@ public sealed class BookArchiveProcessingService : IBookArchiveProcessingService
 
         if (candidates.Count == 0)
         {
-            return new ArchiveBooksProcessingResult
+            var emptyCompletedAt = _timeProvider.GetUtcNow().UtcDateTime;
+            var emptyResult = new ArchiveBooksProcessingResult
             {
                 ProcessedCount = 0,
-                Duration = TimeSpan.Zero
+                Duration = emptyCompletedAt - startTime
             };
+
+            await _bookArchiveRepository.SaveArchiveProcessingResult(
+                CreateJobRun(runId, thresholdDate, maxBooks, emptyResult, startTime, emptyCompletedAt),
+                Array.Empty<ArchiveBookLogEntry>(),
+                cancellationToken);
+
+            return emptyResult;
         }
 
-        var runId = Guid.NewGuid();
-        var startTime = _timeProvider.GetUtcNow().UtcDateTime;
         var archivedCount = 0;
         var skippedCount = 0;
         var failedCount = 0;
@@ -63,18 +71,7 @@ public sealed class BookArchiveProcessingService : IBookArchiveProcessingService
         var completedAt = _timeProvider.GetUtcNow().UtcDateTime;
         var duration = completedAt - startTime;
 
-        logs.Add(CreateSummaryLog(
-            runId,
-            candidates.Count,
-            archivedCount,
-            skippedCount,
-            failedCount,
-            duration,
-            completedAt));
-
-        await _bookArchiveRepository.AddArchiveLogs(logs, cancellationToken);
-
-        return new ArchiveBooksProcessingResult
+        var processingResult = new ArchiveBooksProcessingResult
         {
             ProcessedCount = candidates.Count,
             ArchivedCount = archivedCount,
@@ -82,6 +79,13 @@ public sealed class BookArchiveProcessingService : IBookArchiveProcessingService
             FailedCount = failedCount,
             Duration = duration
         };
+
+        await _bookArchiveRepository.SaveArchiveProcessingResult(
+            CreateJobRun(runId, thresholdDate, maxBooks, processingResult, startTime, completedAt),
+            logs,
+            cancellationToken);
+
+        return processingResult;
     }
 
     private async Task<ArchiveCandidateProcessingResult> ProcessCandidateAsync(
@@ -167,23 +171,26 @@ public sealed class BookArchiveProcessingService : IBookArchiveProcessingService
         };
     }
 
-    private static ArchiveBookLogEntry CreateSummaryLog(
+    private static ArchiveJobRun CreateJobRun(
         Guid runId,
-        int processedCount,
-        int archivedCount,
-        int skippedCount,
-        int failedCount,
-        TimeSpan duration,
-        DateTime processedAt)
+        DateOnly thresholdDate,
+        int maxBooks,
+        ArchiveBooksProcessingResult result,
+        DateTime startedAt,
+        DateTime completedAt)
     {
-        return new ArchiveBookLogEntry
+        return new ArchiveJobRun
         {
-            JobRunId = runId,
-            BookId = null,
-            BookTitle = null,
-            Status = "summary",
-            Reason = $"processed={processedCount}; archived={archivedCount}; skipped={skippedCount}; failed={failedCount}; durationMs={duration.TotalMilliseconds:F0}",
-            ProcessedAt = processedAt
+            Id = runId,
+            ThresholdDate = thresholdDate,
+            MaxBooksPerRun = maxBooks,
+            ProcessedCount = result.ProcessedCount,
+            ArchivedCount = result.ArchivedCount,
+            SkippedCount = result.SkippedCount,
+            FailedCount = result.FailedCount,
+            StartedAt = startedAt,
+            CompletedAt = completedAt,
+            DurationMs = (long)result.Duration.TotalMilliseconds
         };
     }
 

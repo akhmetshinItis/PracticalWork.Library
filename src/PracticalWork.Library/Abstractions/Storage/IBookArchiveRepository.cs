@@ -28,11 +28,13 @@ public interface IBookArchiveRepository
     Task<bool> HasActiveBorrow(Guid bookId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Сохранить логи архивации.
+    /// Сохранить результат запуска архивации и логи по книгам.
     /// </summary>
+    /// <param name="jobRun">Сводка запуска архивации.</param>
     /// <param name="logs">Логи обработки.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    Task AddArchiveLogs(
+    Task SaveArchiveProcessingResult(
+        ArchiveJobRun jobRun,
         IReadOnlyCollection<ArchiveBookLogEntry> logs,
         CancellationToken cancellationToken = default);
 }
