@@ -159,15 +159,24 @@ public sealed class BookArchiveProcessingService : IBookArchiveProcessingService
             ArchivedCount = archivedCount,
             SkippedCount = skippedCount,
             FailedCount = failedCount,
-            LogEntry = new ArchiveBookLogEntry
-            {
-                JobRunId = runId,
-                BookId = candidate.BookId,
-                BookTitle = candidate.BookTitle,
-                Status = status,
-                Reason = reason,
-                ProcessedAt = _timeProvider.GetUtcNow().UtcDateTime
-            }
+            LogEntry = CreateBookLog(runId, candidate, status, reason)
+        };
+    }
+
+    private ArchiveBookLogEntry CreateBookLog(
+        Guid runId,
+        ArchiveBookCandidate candidate,
+        string status,
+        string reason)
+    {
+        return new ArchiveBookLogEntry
+        {
+            JobRunId = runId,
+            BookId = candidate.BookId,
+            BookTitle = candidate.BookTitle,
+            Status = status,
+            Reason = reason,
+            ProcessedAt = _timeProvider.GetUtcNow().UtcDateTime
         };
     }
 
