@@ -18,6 +18,8 @@ public static class Entry
 
         serviceCollection.AddScoped<IBookRepository, BookRepository>();
         serviceCollection.AddScoped<IBookArchiveRepository, BookArchiveRepository>();
+        serviceCollection.AddScoped<IReturnReminderRepository, ReturnReminderRepository>();
+        serviceCollection.AddScoped<IWeeklyAdminReportRepository, WeeklyAdminReportRepository>();
         serviceCollection.AddScoped<IReaderRepository, ReaderRepository>();
         serviceCollection.AddScoped<IBookBorrowRepository, BookBorrowRepository>();
         

@@ -114,6 +114,8 @@ public class Startup
         services.AddHangfireServer();
 
         services.AddScoped<EmailTemplateRenderer>();
+        services.AddScoped<IReturnReminderEmailBuilder, ReturnReminderEmailBuilder>();
+        services.AddScoped<IWeeklyAdminReportEmailBuilder, WeeklyAdminReportEmailBuilder>();
         services.AddScoped<IEmailService, MailKitEmailService>();
         services.AddScoped<ReturnReminderJob>();
         services.AddScoped<WeeklyAdminReportJob>();

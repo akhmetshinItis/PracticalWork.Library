@@ -1,4 +1,4 @@
-namespace PracticalWork.Library.Web.Jobs.Common;
+namespace PracticalWork.Library.Models.NotificationModels;
 
 /// <summary>
 /// Константы типов уведомлений.

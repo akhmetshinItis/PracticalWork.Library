@@ -13,6 +13,9 @@ public static class Entry
     {
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IBookArchiveProcessingService, BookArchiveProcessingService>();
+        services.AddScoped<IReturnReminderProcessingService, ReturnReminderProcessingService>();
+        services.AddScoped<IWeeklyAdminReportCsvBuilder, WeeklyAdminReportCsvBuilder>();
+        services.AddScoped<IWeeklyAdminReportProcessingService, WeeklyAdminReportProcessingService>();
         services.AddScoped<IReaderService, ReaderService>();
         services.AddScoped<ILibraryService, LibraryService>();
         services.AddScoped<IReportService, ReportService>();
