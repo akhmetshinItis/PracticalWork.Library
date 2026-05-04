@@ -1,9 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PracticalWork.Library.Abstractions.Services;
-using PracticalWork.Library.Data.PostgreSql;
-using PracticalWork.Library.Data.PostgreSql.Entities;
+using PracticalWork.Library.Abstractions.Storage;
 using PracticalWork.Library.Enums;
+using PracticalWork.Library.Models.BookModels;
 using PracticalWork.Library.Options;
 using PracticalWork.Library.Web.Jobs.Common;
 
@@ -14,20 +13,20 @@ namespace PracticalWork.Library.Web.Jobs.Archive;
 /// </summary>
 public sealed class ArchiveOldBooksJob : ILibraryJob
 {
-    private readonly AppDbContext _dbContext;
+    private readonly IBookArchiveRepository _bookArchiveRepository;
     private readonly IBookService _bookService;
     private readonly IOptions<JobSettings> _jobSettingsOptions;
     private readonly IOptions<ArchiveSettings> _archiveSettingsOptions;
     private readonly ILogger<ArchiveOldBooksJob> _logger;
 
     public ArchiveOldBooksJob(
-        AppDbContext dbContext,
+        IBookArchiveRepository bookArchiveRepository,
         IBookService bookService,
         IOptions<JobSettings> jobSettingsOptions,
         IOptions<ArchiveSettings> archiveSettingsOptions,
         ILogger<ArchiveOldBooksJob> logger)
     {
-        _dbContext = dbContext;
+        _bookArchiveRepository = bookArchiveRepository;
         _bookService = bookService;
         _jobSettingsOptions = jobSettingsOptions;
         _archiveSettingsOptions = archiveSettingsOptions;
@@ -50,24 +49,10 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
         var thresholdDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddYears(-archiveSettings.YearsWithoutBorrow));
         var maxBooks = Math.Max(1, archiveSettings.MaxBooksPerRun);
 
-        var candidates = await _dbContext.Set<AbstractBookEntity>()
-            .AsNoTracking()
-            .Where(book => book.Status != BookStatus.Archived)
-            .Select(book => new ArchiveCandidate
-            {
-                BookId = book.Id,
-                BookTitle = book.Title,
-                BookStatus = book.Status,
-                LastBorrowDate = _dbContext.Set<BookBorrowEntity>()
-                    .Where(borrow => borrow.BookId == book.Id)
-                    .Max(borrow => (DateOnly?)borrow.BorrowDate),
-                HasActiveBorrow = _dbContext.Set<BookBorrowEntity>()
-                    .Any(borrow => borrow.BookId == book.Id && borrow.Status == BookIssueStatus.Issued)
-            })
-            .Where(candidate => candidate.LastBorrowDate == null || candidate.LastBorrowDate < thresholdDate)
-            .OrderBy(candidate => candidate.LastBorrowDate ?? DateOnly.MinValue)
-            .Take(maxBooks)
-            .ToListAsync(cancellationToken);
+        var candidates = await _bookArchiveRepository.GetArchiveCandidates(
+            thresholdDate,
+            maxBooks,
+            cancellationToken);
 
         if (candidates.Count == 0)
         {
@@ -81,7 +66,7 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
         var skippedCount = 0;
         var failedCount = 0;
 
-        var logs = new List<ArchiveLogEntity>();
+        var logs = new List<ArchiveBookLogEntry>();
 
         foreach (var candidate in candidates)
         {
@@ -103,11 +88,7 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
                 continue;
             }
 
-            var hasActiveBorrow = await _dbContext.Set<BookBorrowEntity>()
-                .AsNoTracking()
-                .AnyAsync(
-                    borrow => borrow.BookId == candidate.BookId && borrow.Status == BookIssueStatus.Issued,
-                    cancellationToken);
+            var hasActiveBorrow = await _bookArchiveRepository.HasActiveBorrow(candidate.BookId, cancellationToken);
 
             if (hasActiveBorrow)
             {
@@ -131,7 +112,7 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
 
         var duration = DateTime.UtcNow - startTime;
 
-        logs.Add(new ArchiveLogEntity
+        logs.Add(new ArchiveBookLogEntry
         {
             JobRunId = runId,
             BookId = null,
@@ -141,8 +122,7 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
             ProcessedAt = DateTime.UtcNow
         });
 
-        await _dbContext.Set<ArchiveLogEntity>().AddRangeAsync(logs, cancellationToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _bookArchiveRepository.AddArchiveLogs(logs, cancellationToken);
 
         _logger.LogInformation(
             "{JobName}: processed={Processed}; archived={Archived}; skipped={Skipped}; failed={Failed}; duration={Duration}",
@@ -154,13 +134,13 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
             duration);
     }
 
-    private static ArchiveLogEntity CreateBookLog(
+    private static ArchiveBookLogEntry CreateBookLog(
         Guid runId,
-        ArchiveCandidate candidate,
+        ArchiveBookCandidate candidate,
         string status,
         string reason)
     {
-        return new ArchiveLogEntity
+        return new ArchiveBookLogEntry
         {
             JobRunId = runId,
             BookId = candidate.BookId,
@@ -169,14 +149,5 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
             Reason = reason,
             ProcessedAt = DateTime.UtcNow
         };
-    }
-
-    private sealed class ArchiveCandidate
-    {
-        public Guid BookId { get; init; }
-        public required string BookTitle { get; init; }
-        public BookStatus BookStatus { get; init; }
-        public DateOnly? LastBorrowDate { get; init; }
-        public bool HasActiveBorrow { get; init; }
     }
 }
