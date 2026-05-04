@@ -11,24 +11,23 @@ namespace PracticalWork.Library.Web.Jobs.Common;
 /// </summary>
 public sealed class HangfireJobManagementService : IJobManagementService
 {
-    private readonly IOptions<JobSettings> _jobSettingsOptions;
+    private readonly JobSettings _jobSettings;
 
     public HangfireJobManagementService(IOptions<JobSettings> jobSettingsOptions)
     {
-        _jobSettingsOptions = jobSettingsOptions;
+        _jobSettings = jobSettingsOptions.Value;
     }
 
     public IReadOnlyList<ScheduledJobInfo> GetJobs()
     {
-        var settings = _jobSettingsOptions.Value;
         return LibraryJobNames.All
-            .Where(jobName => settings.Jobs.ContainsKey(jobName))
+            .Where(jobName => _jobSettings.Jobs.ContainsKey(jobName))
             .Select(jobName => new ScheduledJobInfo
             {
                 Name = jobName,
                 Description = LibraryJobDescriptions.GetDescription(jobName),
-                CronExpression = settings.Jobs[jobName].CronExpression,
-                TimeZoneId = settings.TimeZoneId
+                CronExpression = _jobSettings.Jobs[jobName].CronExpression,
+                TimeZoneId = _jobSettings.TimeZoneId
             })
             .ToList();
     }

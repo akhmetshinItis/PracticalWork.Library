@@ -21,9 +21,9 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
     private readonly IMinioService _minioService;
     private readonly IEmailService _emailService;
     private readonly EmailTemplateRenderer _templateRenderer;
-    private readonly IOptions<JobSettings> _jobSettingsOptions;
-    private readonly IOptions<EmailSettings> _emailSettingsOptions;
-    private readonly IOptions<EmailTemplateSettings> _templateSettingsOptions;
+    private readonly JobSettings _jobSettings;
+    private readonly EmailSettings _emailSettings;
+    private readonly EmailTemplateSettings _templateSettings;
     private readonly ILogger<WeeklyAdminReportJob> _logger;
 
     public WeeklyAdminReportJob(
@@ -40,9 +40,9 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
         _minioService = minioService;
         _emailService = emailService;
         _templateRenderer = templateRenderer;
-        _jobSettingsOptions = jobSettingsOptions;
-        _emailSettingsOptions = emailSettingsOptions;
-        _templateSettingsOptions = templateSettingsOptions;
+        _jobSettings = jobSettingsOptions.Value;
+        _emailSettings = emailSettingsOptions.Value;
+        _templateSettings = templateSettingsOptions.Value;
         _logger = logger;
     }
 
@@ -52,16 +52,15 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
 
     public async Task ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        var configuration = _jobSettingsOptions.Value.Jobs[JobName];
+        var configuration = _jobSettings.Jobs[JobName];
         await JobExecutionPolicy.ExecuteAsync(JobName, configuration, _logger, ExecuteCoreAsync, cancellationToken);
     }
 
     private async Task ExecuteCoreAsync(CancellationToken cancellationToken)
     {
-        var jobSettings = _jobSettingsOptions.Value;
-        var template = _templateSettingsOptions.Value.WeeklyReport;
+        var template = _templateSettings.WeeklyReport;
 
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(jobSettings.TimeZoneId);
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(_jobSettings.TimeZoneId);
         var (periodFrom, periodTo) = GetPreviousWeekPeriod(timeZone);
 
         var statistics = await CollectStatisticsAsync(periodFrom, periodTo, timeZone, cancellationToken);
@@ -80,7 +79,7 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
         await UpsertReportMetadataAsync(reportName, bucket, periodFrom, periodTo, statistics, cancellationToken);
         await CleanupOldReportsAsync(bucket, template.ReportRetentionDays, cancellationToken);
 
-        var adminEmails = ResolveAdminEmails(template, _emailSettingsOptions.Value);
+        var adminEmails = ResolveAdminEmails(template, _emailSettings);
         if (adminEmails.Count == 0)
         {
             _logger.LogInformation("{JobName}: список администраторов пуст, отправка email пропущена", JobName);

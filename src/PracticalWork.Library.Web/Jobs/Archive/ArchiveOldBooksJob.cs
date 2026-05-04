@@ -15,8 +15,8 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
 {
     private readonly IBookArchiveRepository _bookArchiveRepository;
     private readonly IBookService _bookService;
-    private readonly IOptions<JobSettings> _jobSettingsOptions;
-    private readonly IOptions<ArchiveSettings> _archiveSettingsOptions;
+    private readonly JobSettings _jobSettings;
+    private readonly ArchiveSettings _archiveSettings;
     private readonly ILogger<ArchiveOldBooksJob> _logger;
 
     public ArchiveOldBooksJob(
@@ -28,8 +28,8 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
     {
         _bookArchiveRepository = bookArchiveRepository;
         _bookService = bookService;
-        _jobSettingsOptions = jobSettingsOptions;
-        _archiveSettingsOptions = archiveSettingsOptions;
+        _jobSettings = jobSettingsOptions.Value;
+        _archiveSettings = archiveSettingsOptions.Value;
         _logger = logger;
     }
 
@@ -39,15 +39,14 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
 
     public async Task ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        var configuration = _jobSettingsOptions.Value.Jobs[JobName];
+        var configuration = _jobSettings.Jobs[JobName];
         await JobExecutionPolicy.ExecuteAsync(JobName, configuration, _logger, ExecuteCoreAsync, cancellationToken);
     }
 
     private async Task ExecuteCoreAsync(CancellationToken cancellationToken)
     {
-        var archiveSettings = _archiveSettingsOptions.Value;
-        var thresholdDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddYears(-archiveSettings.YearsWithoutBorrow));
-        var maxBooks = Math.Max(1, archiveSettings.MaxBooksPerRun);
+        var thresholdDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddYears(-_archiveSettings.YearsWithoutBorrow));
+        var maxBooks = Math.Max(1, _archiveSettings.MaxBooksPerRun);
 
         var candidates = await _bookArchiveRepository.GetArchiveCandidates(
             thresholdDate,

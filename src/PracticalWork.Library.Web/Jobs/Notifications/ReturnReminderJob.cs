@@ -19,8 +19,8 @@ public sealed class ReturnReminderJob : ILibraryJob
     private readonly AppDbContext _dbContext;
     private readonly IEmailService _emailService;
     private readonly EmailTemplateRenderer _templateRenderer;
-    private readonly IOptions<JobSettings> _jobSettingsOptions;
-    private readonly IOptions<EmailTemplateSettings> _templateSettingsOptions;
+    private readonly JobSettings _jobSettings;
+    private readonly EmailTemplateSettings _templateSettings;
     private readonly ILogger<ReturnReminderJob> _logger;
 
     public ReturnReminderJob(
@@ -34,8 +34,8 @@ public sealed class ReturnReminderJob : ILibraryJob
         _dbContext = dbContext;
         _emailService = emailService;
         _templateRenderer = templateRenderer;
-        _jobSettingsOptions = jobSettingsOptions;
-        _templateSettingsOptions = templateSettingsOptions;
+        _jobSettings = jobSettingsOptions.Value;
+        _templateSettings = templateSettingsOptions.Value;
         _logger = logger;
     }
 
@@ -45,13 +45,13 @@ public sealed class ReturnReminderJob : ILibraryJob
 
     public async Task ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        var configuration = _jobSettingsOptions.Value.Jobs[JobName];
+        var configuration = _jobSettings.Jobs[JobName];
         await JobExecutionPolicy.ExecuteAsync(JobName, configuration, _logger, ExecuteCoreAsync, cancellationToken);
     }
 
     private async Task ExecuteCoreAsync(CancellationToken cancellationToken)
     {
-        var template = _templateSettingsOptions.Value.ReturnReminder;
+        var template = _templateSettings.ReturnReminder;
         var dueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(template.DaysBeforeDueDate));
         var duplicateCutoff = DateTime.UtcNow.AddHours(-24);
 
