@@ -11,19 +11,10 @@ public interface IReturnReminderRepository
     /// Получить кандидатов на отправку напоминания.
     /// </summary>
     /// <param name="dueDate">Дата возврата книги.</param>
+    /// <param name="duplicateCutoff">Нижняя граница окна дедупликации.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     Task<IReadOnlyList<ReturnReminderCandidate>> GetCandidates(
         DateOnly dueDate,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Получить идентификаторы выдач, по которым уже отправлялось успешное напоминание.
-    /// </summary>
-    /// <param name="borrowIds">Идентификаторы выдач.</param>
-    /// <param name="duplicateCutoff">Нижняя граница окна дедупликации.</param>
-    /// <param name="cancellationToken">Токен отмены.</param>
-    Task<IReadOnlySet<Guid>> GetAlreadyNotifiedBorrowIds(
-        IReadOnlyCollection<Guid> borrowIds,
         DateTime duplicateCutoff,
         CancellationToken cancellationToken = default);
 

@@ -44,4 +44,9 @@ public sealed class ReturnReminderCandidate
     /// Срок возврата книги.
     /// </summary>
     public DateOnly DueDate { get; init; }
+
+    /// <summary>
+    /// Было ли уже успешно отправлено напоминание в окне дедупликации.
+    /// </summary>
+    public bool HasRecentSuccessfulReminder { get; init; }
 }

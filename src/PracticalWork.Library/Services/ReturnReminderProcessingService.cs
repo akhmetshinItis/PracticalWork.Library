@@ -33,17 +33,14 @@ public sealed class ReturnReminderProcessingService : IReturnReminderProcessingS
         ReturnReminderTemplate template,
         CancellationToken cancellationToken = default)
     {
-        var candidates = await _returnReminderRepository.GetCandidates(dueDate, cancellationToken);
+        var candidates = await _returnReminderRepository.GetCandidates(
+            dueDate,
+            duplicateCutoff,
+            cancellationToken);
         if (candidates.Count == 0)
         {
             return new ReturnReminderProcessingResult();
         }
-
-        var borrowIds = candidates.Select(candidate => candidate.BorrowId).ToList();
-        var alreadyNotified = await _returnReminderRepository.GetAlreadyNotifiedBorrowIds(
-            borrowIds,
-            duplicateCutoff,
-            cancellationToken);
 
         var successCount = 0;
         var failureCount = 0;
@@ -52,7 +49,7 @@ public sealed class ReturnReminderProcessingService : IReturnReminderProcessingS
 
         foreach (var candidate in candidates)
         {
-            if (alreadyNotified.Contains(candidate.BorrowId))
+            if (candidate.HasRecentSuccessfulReminder)
             {
                 skippedCount++;
                 continue;

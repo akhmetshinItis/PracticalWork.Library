@@ -57,10 +57,18 @@ public sealed class BookArchiveProcessingService : IBookArchiveProcessingService
         var skippedCount = 0;
         var failedCount = 0;
         var logs = new List<ArchiveBookLogEntry>();
+        var bookIds = candidates.Select(candidate => candidate.BookId).ToList();
+        var booksWithActiveBorrow = await _bookArchiveRepository.GetBooksWithActiveBorrow(
+            bookIds,
+            cancellationToken);
 
         foreach (var candidate in candidates)
         {
-            var result = await ProcessCandidateAsync(runId, candidate, cancellationToken);
+            var result = await ProcessCandidateAsync(
+                runId,
+                candidate,
+                booksWithActiveBorrow.Contains(candidate.BookId),
+                cancellationToken);
 
             archivedCount += result.ArchivedCount;
             skippedCount += result.SkippedCount;
@@ -91,6 +99,7 @@ public sealed class BookArchiveProcessingService : IBookArchiveProcessingService
     private async Task<ArchiveCandidateProcessingResult> ProcessCandidateAsync(
         Guid runId,
         ArchiveBookCandidate candidate,
+        bool hasActiveBorrowAtProcessingStart,
         CancellationToken cancellationToken)
     {
         if (candidate.BookStatus != BookStatus.Available)
@@ -113,8 +122,7 @@ public sealed class BookArchiveProcessingService : IBookArchiveProcessingService
                 skippedCount: 1);
         }
 
-        var hasActiveBorrow = await _bookArchiveRepository.HasActiveBorrow(candidate.BookId, cancellationToken);
-        if (hasActiveBorrow)
+        if (hasActiveBorrowAtProcessingStart)
         {
             return CreateCandidateResult(
                 runId,

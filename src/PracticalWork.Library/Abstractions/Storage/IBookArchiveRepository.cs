@@ -20,12 +20,14 @@ public interface IBookArchiveRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Проверить, выдана ли книга читателю.
+    /// Получить идентификаторы книг с активной выдачей.
     /// </summary>
-    /// <param name="bookId">Идентификатор книги.</param>
+    /// <param name="bookIds">Идентификаторы книг.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    /// <returns>Признак активной выдачи.</returns>
-    Task<bool> HasActiveBorrow(Guid bookId, CancellationToken cancellationToken = default);
+    /// <returns>Множество идентификаторов книг с активной выдачей.</returns>
+    Task<IReadOnlySet<Guid>> GetBooksWithActiveBorrow(
+        IReadOnlyCollection<Guid> bookIds,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Сохранить результат запуска архивации и логи по книгам.

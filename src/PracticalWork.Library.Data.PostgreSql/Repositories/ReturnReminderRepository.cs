@@ -20,6 +20,7 @@ public sealed class ReturnReminderRepository : IReturnReminderRepository
 
     public async Task<IReadOnlyList<ReturnReminderCandidate>> GetCandidates(
         DateOnly dueDate,
+        DateTime duplicateCutoff,
         CancellationToken cancellationToken = default)
     {
         return await (
@@ -38,26 +39,13 @@ public sealed class ReturnReminderRepository : IReturnReminderRepository
                 BookId = book.Id,
                 BookTitle = book.Title,
                 BookAuthors = book.Authors.ToArray(),
-                DueDate = borrow.DueDate
+                DueDate = borrow.DueDate,
+                HasRecentSuccessfulReminder = _appDbContext.NotificationLogs
+                    .Any(log => log.NotificationType == NotificationTypes.ReturnReminder
+                                && log.IsSuccess
+                                && log.BorrowId == borrow.Id
+                                && log.SentAt >= duplicateCutoff)
             }).ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlySet<Guid>> GetAlreadyNotifiedBorrowIds(
-        IReadOnlyCollection<Guid> borrowIds,
-        DateTime duplicateCutoff,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await _appDbContext.Set<NotificationLogEntity>()
-            .AsNoTracking()
-            .Where(log => log.NotificationType == NotificationTypes.ReturnReminder
-                          && log.IsSuccess
-                          && log.BorrowId.HasValue
-                          && borrowIds.Contains(log.BorrowId.Value)
-                          && log.SentAt >= duplicateCutoff)
-            .Select(log => log.BorrowId!.Value)
-            .ToListAsync(cancellationToken);
-
-        return result.ToHashSet();
     }
 
     public async Task SaveNotificationLogs(

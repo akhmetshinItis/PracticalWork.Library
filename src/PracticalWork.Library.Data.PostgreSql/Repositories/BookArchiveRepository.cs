@@ -45,13 +45,18 @@ public sealed class BookArchiveRepository : IBookArchiveRepository
     }
 
     /// <inheritdoc />
-    public Task<bool> HasActiveBorrow(Guid bookId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlySet<Guid>> GetBooksWithActiveBorrow(
+        IReadOnlyCollection<Guid> bookIds,
+        CancellationToken cancellationToken = default)
     {
-        return _appDbContext.BookBorrows
+        var result = await _appDbContext.BookBorrows
             .AsNoTracking()
-            .AnyAsync(
-                borrow => borrow.BookId == bookId && borrow.Status == BookIssueStatus.Issued,
-                cancellationToken);
+            .Where(borrow => bookIds.Contains(borrow.BookId) && borrow.Status == BookIssueStatus.Issued)
+            .Select(borrow => borrow.BookId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        return result.ToHashSet();
     }
 
     /// <inheritdoc />

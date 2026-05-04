@@ -27,41 +27,45 @@ public sealed class WeeklyAdminReportRepository : IWeeklyAdminReportRepository
     {
         var periodFromUtc = TimeZoneInfo.ConvertTimeToUtc(periodFrom.ToDateTime(TimeOnly.MinValue), timeZone);
         var periodToExclusiveUtc = TimeZoneInfo.ConvertTimeToUtc(periodTo.AddDays(1).ToDateTime(TimeOnly.MinValue), timeZone);
-
         var newBooksCount = await _appDbContext.Books
             .AsNoTracking()
-            .CountAsync(book => book.CreatedAt >= periodFromUtc && book.CreatedAt < periodToExclusiveUtc, cancellationToken);
+            .CountAsync(
+                book => book.CreatedAt >= periodFromUtc && book.CreatedAt < periodToExclusiveUtc,
+                cancellationToken);
 
         var newReadersCount = await _appDbContext.Readers
             .AsNoTracking()
-            .CountAsync(reader => reader.CreatedAt >= periodFromUtc && reader.CreatedAt < periodToExclusiveUtc, cancellationToken);
-
-        var borrowedCount = await _appDbContext.BookBorrows
-            .AsNoTracking()
-            .CountAsync(borrow => borrow.BorrowDate >= periodFrom && borrow.BorrowDate <= periodTo, cancellationToken);
-
-        var returnedCount = await _appDbContext.BookBorrows
-            .AsNoTracking()
-            .CountAsync(borrow =>
-                    borrow.ReturnDate >= periodFrom
-                    && borrow.ReturnDate <= periodTo
-                    && borrow.Status != BookIssueStatus.Issued,
+            .CountAsync(
+                reader => reader.CreatedAt >= periodFromUtc && reader.CreatedAt < periodToExclusiveUtc,
                 cancellationToken);
 
-        var overdueCount = await _appDbContext.BookBorrows
+        var borrowStatistics = await _appDbContext.BookBorrows
             .AsNoTracking()
-            .CountAsync(borrow =>
-                    borrow.Status == BookIssueStatus.Issued
-                    && borrow.DueDate < periodTo,
-                cancellationToken);
+            .Where(borrow =>
+                (borrow.BorrowDate >= periodFrom && borrow.BorrowDate <= periodTo)
+                || (borrow.ReturnDate >= periodFrom && borrow.ReturnDate <= periodTo && borrow.Status != BookIssueStatus.Issued)
+                || (borrow.Status == BookIssueStatus.Issued && borrow.DueDate < periodTo))
+            .GroupBy(_ => 1)
+            .Select(group => new
+            {
+                BorrowedCount = group.Count(borrow => borrow.BorrowDate >= periodFrom && borrow.BorrowDate <= periodTo),
+                ReturnedCount = group.Count(
+                    borrow => borrow.ReturnDate >= periodFrom
+                              && borrow.ReturnDate <= periodTo
+                              && borrow.Status != BookIssueStatus.Issued),
+                OverdueCount = group.Count(
+                    borrow => borrow.Status == BookIssueStatus.Issued
+                              && borrow.DueDate < periodTo)
+            })
+            .SingleOrDefaultAsync(cancellationToken);
 
         return new WeeklyAdminReportStatistics
         {
             NewBooksCount = newBooksCount,
             NewReadersCount = newReadersCount,
-            BorrowedCount = borrowedCount,
-            ReturnedCount = returnedCount,
-            OverdueCount = overdueCount
+            BorrowedCount = borrowStatistics?.BorrowedCount ?? 0,
+            ReturnedCount = borrowStatistics?.ReturnedCount ?? 0,
+            OverdueCount = borrowStatistics?.OverdueCount ?? 0
         };
     }
 
