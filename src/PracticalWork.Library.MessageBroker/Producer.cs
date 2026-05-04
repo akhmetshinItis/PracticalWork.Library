@@ -11,13 +11,16 @@ public class Producer : IMessageProducer
 {
     private readonly IAdvancedBus _advancedBus;
     private readonly RabbitMqOptions _options;
+    private readonly TimeProvider _timeProvider;
     
     public Producer(
         IBus bus,
-        IOptions<RabbitMqOptions> options)
+        IOptions<RabbitMqOptions> options,
+        TimeProvider timeProvider)
     {
         _advancedBus = bus.Advanced;
         _options = options.Value;
+        _timeProvider = timeProvider;
     }
     
     public async Task ProduceBookCreateAsync(BookCreatedEvent message)
@@ -81,7 +84,7 @@ public class Producer : IMessageProducer
             {
                 DeliveryMode = 2,
                 AppId = _options.AppName,
-                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                Timestamp = _timeProvider.GetUtcNow().ToUnixTimeSeconds()
             }
         };
         

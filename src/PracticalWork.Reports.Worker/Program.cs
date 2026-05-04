@@ -13,6 +13,8 @@ using PracticalWork.Reports.Worker.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+builder.Services.AddSingleton(TimeProvider.System);
+
 builder.Services
     .AddMessageBroker(builder.Configuration);
 

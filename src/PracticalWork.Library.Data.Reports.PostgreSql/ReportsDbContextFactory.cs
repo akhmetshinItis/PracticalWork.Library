@@ -15,7 +15,7 @@ public sealed class ReportsDbContextFactory : IDesignTimeDbContextFactory<Report
         var optionsBuilder = new DbContextOptionsBuilder<ReportsDbContext>();
         optionsBuilder.UseNpgsql(connectionString);
 
-        return new ReportsDbContext(optionsBuilder.Options);
+        return new ReportsDbContext(optionsBuilder.Options, TimeProvider.System);
     }
 
     private static string GetConnectionString(string[] args)

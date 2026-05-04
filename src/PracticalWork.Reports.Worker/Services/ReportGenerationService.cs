@@ -17,6 +17,7 @@ public sealed class ReportGenerationService : IReportGenerationService
     private readonly ICacheVersionService _cacheVersionService;
     private readonly MinioOptions _minioOptions;
     private readonly BooksCacheOptions _cacheOptions;
+    private readonly TimeProvider _timeProvider;
 
     public ReportGenerationService(
         IActivityLogRepository activityLogRepository,
@@ -25,7 +26,8 @@ public sealed class ReportGenerationService : IReportGenerationService
         IReportGenerateService reportGenerateService,
         ICacheVersionService cacheVersionService,
         IOptionsMonitor<MinioOptions> minioOptions,
-        IOptionsMonitor<BooksCacheOptions> cacheOptions)
+        IOptionsMonitor<BooksCacheOptions> cacheOptions,
+        TimeProvider timeProvider)
     {
         _activityLogRepository = activityLogRepository;
         _reportRepository = reportRepository;
@@ -34,6 +36,7 @@ public sealed class ReportGenerationService : IReportGenerationService
         _cacheVersionService = cacheVersionService;
         _minioOptions = minioOptions.CurrentValue;
         _cacheOptions = cacheOptions.CurrentValue;
+        _timeProvider = timeProvider;
     }
 
     public async Task GenerateReportAsync(
@@ -57,7 +60,7 @@ public sealed class ReportGenerationService : IReportGenerationService
                 reportResult.ContentType);
 
             var fileName = reportResult.FileName.Split('/')[^1];
-            report.MarkAsGenerated(fileName);
+            report.MarkAsGenerated(fileName, _timeProvider);
             await _reportRepository.UpdateReport(reportId, report);
             await CacheManager.InvalidateReportsCacheAsync(_cacheVersionService, _cacheOptions);
         }

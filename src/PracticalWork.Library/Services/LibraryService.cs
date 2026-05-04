@@ -26,6 +26,7 @@ public class LibraryService: ILibraryService
     private readonly IMessageProducer _producer;
     private readonly BooksCacheOptions _cacheOptions;
     private readonly MinioOptions _minioOptions;
+    private readonly TimeProvider _timeProvider;
     
     public LibraryService(IReaderRepository readerRepository, 
         IBookRepository bookRepository,
@@ -35,7 +36,8 @@ public class LibraryService: ILibraryService
         ICacheService cacheService,
         IMessageProducer producer,
         IOptionsMonitor<BooksCacheOptions> cacheOptions,
-        IOptionsMonitor<MinioOptions> minioOptions)
+        IOptionsMonitor<MinioOptions> minioOptions,
+        TimeProvider timeProvider)
     {
         _readerRepository = readerRepository;
         _bookRepository = bookRepository;
@@ -46,6 +48,7 @@ public class LibraryService: ILibraryService
         _cacheOptions = cacheOptions.CurrentValue;
         _minioOptions = minioOptions.CurrentValue;
         _producer = producer;
+        _timeProvider = timeProvider;
     }
     
     public async Task BorrowBook(Guid bookId, Guid readerId)
@@ -61,7 +64,7 @@ public class LibraryService: ILibraryService
         {
             throw new LibraryServiceException("Нельзя выдать книгу с неактивной карточкой");
         }
-        var bookBorrow = BookBorrow.CreateBookBorrow();
+        var bookBorrow = BookBorrow.CreateBookBorrow(_timeProvider);
         book.Status = BookStatus.Borrow;
         await _bookBorrowRepository.CreateBookBorrow(bookId, readerId, bookBorrow);
         await _bookRepository.UpdateBook(book, bookId);
@@ -79,7 +82,7 @@ public class LibraryService: ILibraryService
         {
             throw new LibraryServiceException("Книга уже возвращена");
         }
-        bookBorrow.ReturnBookBorrow();
+        bookBorrow.ReturnBookBorrow(_timeProvider);
         await _bookBorrowRepository.UpdateReturnedBookBorrow(id, bookBorrow);
         var message = new BookReturnedEvent(bookId, readerId, bookBorrow.Book.Title, 
             reader.FullName, bookBorrow.ReturnDate);

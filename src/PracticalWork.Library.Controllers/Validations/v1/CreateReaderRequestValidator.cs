@@ -9,7 +9,7 @@ namespace PracticalWork.Library.Controllers.Validations.v1;
 /// </summary>
 public class CreateReaderRequestValidator: AbstractValidator<CreateReaderRequest>
 {
-    public CreateReaderRequestValidator()
+    public CreateReaderRequestValidator(TimeProvider timeProvider)
     {
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("Номер телефона обязателен")
@@ -24,6 +24,6 @@ public class CreateReaderRequestValidator: AbstractValidator<CreateReaderRequest
             .EmailAddress().WithMessage("Неправильный формат email");
         RuleFor(x => x.ExpiryDate)
             .NotEmpty().WithMessage("Дата окончания карточки обязательна")
-            .GreaterThan(DateOnly.FromDateTime(DateTime.UtcNow));
+            .GreaterThan(DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime));
     }
 }

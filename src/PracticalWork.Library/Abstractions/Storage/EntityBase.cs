@@ -27,6 +27,6 @@ public abstract class EntityBase : IEntity
     protected EntityBase()
     {
         Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = TimeProvider.System.GetUtcNow().UtcDateTime;
     }
 }

@@ -40,9 +40,10 @@ public class Report
     /// Пометить отчет как сгенерированный
     /// </summary>
     /// <param name="fileName">Название отчета</param>
-    public void MarkAsGenerated(string fileName)
+    /// <param name="timeProvider">Поставщик времени</param>
+    public void MarkAsGenerated(string fileName, TimeProvider timeProvider)
     {
-        GeneratedAt = DateTime.UtcNow;
+        GeneratedAt = timeProvider.GetUtcNow().UtcDateTime;
         Status = ReportStatus.Generated;
         Name = fileName;
     }

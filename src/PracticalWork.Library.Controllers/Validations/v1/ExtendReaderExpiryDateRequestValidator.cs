@@ -10,10 +10,10 @@ namespace PracticalWork.Library.Controllers.Validations.v1;
 public class ExtendReaderExpiryDateRequestValidator: 
     AbstractValidator<ExtendReaderExpiryDateRequest>
 {
-    public ExtendReaderExpiryDateRequestValidator()
+    public ExtendReaderExpiryDateRequestValidator(TimeProvider timeProvider)
     {
         RuleFor(x => x.Date)
             .NotEmpty().WithMessage("Дата продления карточки обязательна")
-            .GreaterThan(DateOnly.FromDateTime(DateTime.UtcNow));
+            .GreaterThan(DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime));
     }
 }

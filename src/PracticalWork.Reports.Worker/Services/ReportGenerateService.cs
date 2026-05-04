@@ -7,9 +7,16 @@ namespace PracticalWork.Reports.Worker.Services;
 
 public sealed class ReportGenerateService : IReportGenerateService
 {
+    private readonly TimeProvider _timeProvider;
+
+    public ReportGenerateService(TimeProvider timeProvider)
+    {
+        _timeProvider = timeProvider;
+    }
+
     public ReportGenerateResult GenerateReport(Guid reportId, IReadOnlyList<ActivityLog> logs)
     {
-        var timestamp = DateTime.UtcNow;
+        var timestamp = _timeProvider.GetUtcNow().UtcDateTime;
         var fileName = $"{timestamp.Year}/{timestamp.Month}/{reportId}.csv";
         const string contentType = "text/csv";
 

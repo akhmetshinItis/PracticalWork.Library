@@ -24,6 +24,7 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
     private readonly JobSettings _jobSettings;
     private readonly EmailSettings _emailSettings;
     private readonly EmailTemplateSettings _templateSettings;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<WeeklyAdminReportJob> _logger;
 
     public WeeklyAdminReportJob(
@@ -34,6 +35,7 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
         IOptions<JobSettings> jobSettingsOptions,
         IOptions<EmailSettings> emailSettingsOptions,
         IOptions<EmailTemplateSettings> templateSettingsOptions,
+        TimeProvider timeProvider,
         ILogger<WeeklyAdminReportJob> logger)
     {
         _dbContext = dbContext;
@@ -43,6 +45,7 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
         _jobSettings = jobSettingsOptions.Value;
         _emailSettings = emailSettingsOptions.Value;
         _templateSettings = templateSettingsOptions.Value;
+        _timeProvider = timeProvider;
         _logger = logger;
     }
 
@@ -120,7 +123,7 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
             {
                 NotificationType = NotificationTypes.WeeklyReport,
                 ReceiverEmail = adminEmail,
-                SentAt = DateTime.UtcNow,
+                SentAt = _timeProvider.GetUtcNow().UtcDateTime,
                 IsSuccess = sendResult.Success,
                 ErrorMessage = sendResult.ErrorMessage
             });
@@ -231,7 +234,7 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
 
     private async Task CleanupOldReportsAsync(string bucket, int retentionDays, CancellationToken cancellationToken)
     {
-        var cutoffUtc = DateTime.UtcNow.AddDays(-Math.Max(1, retentionDays));
+        var cutoffUtc = _timeProvider.GetUtcNow().UtcDateTime.AddDays(-Math.Max(1, retentionDays));
 
         var oldReports = await _dbContext.Set<WeeklyReportMetadataEntity>()
             .Where(report => !report.IsDeleted && report.CreatedAt < cutoffUtc)
@@ -243,7 +246,7 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
             {
                 await _minioService.RemoveFileAsync(bucket, report.ObjectName, cancellationToken);
                 report.IsDeleted = true;
-                report.DeletedAt = DateTime.UtcNow;
+                report.DeletedAt = _timeProvider.GetUtcNow().UtcDateTime;
             }
             catch (Exception exception)
             {
@@ -286,9 +289,9 @@ public sealed class WeeklyAdminReportJob : ILibraryJob
         return sb.ToString();
     }
 
-    private static (DateOnly periodFrom, DateOnly periodTo) GetPreviousWeekPeriod(TimeZoneInfo timeZone)
+    private (DateOnly periodFrom, DateOnly periodTo) GetPreviousWeekPeriod(TimeZoneInfo timeZone)
     {
-        var nowLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone).Date;
+        var nowLocal = TimeZoneInfo.ConvertTimeFromUtc(_timeProvider.GetUtcNow().UtcDateTime, timeZone).Date;
         var daysSinceMonday = ((int)nowLocal.DayOfWeek + 6) % 7;
 
         var currentWeekMonday = nowLocal.AddDays(-daysSinceMonday);

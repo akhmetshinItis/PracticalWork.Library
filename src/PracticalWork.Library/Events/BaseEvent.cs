@@ -15,7 +15,7 @@ public abstract record BaseEvent(
 )
 {
     protected BaseEvent(Guid eventId, string eventType, string source)
-        : this(eventId, DateTime.UtcNow, eventType, source)
+        : this(eventId, TimeProvider.System.GetUtcNow().UtcDateTime, eventType, source)
     {
     }
 }

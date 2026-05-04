@@ -6,8 +6,11 @@ namespace PracticalWork.Library.Data.Reports.PostgreSql;
 
 public class ReportsDbContext: DbContext
 {
-    public ReportsDbContext(DbContextOptions<ReportsDbContext> options) : base(options)
+    private readonly TimeProvider _timeProvider;
+
+    public ReportsDbContext(DbContextOptions<ReportsDbContext> options, TimeProvider timeProvider) : base(options)
     {
+        _timeProvider = timeProvider;
     }
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -31,7 +34,7 @@ public class ReportsDbContext: DbContext
 
     private void SetUpdateDates()
     {
-        var updateDate = DateTime.UtcNow;
+        var updateDate = _timeProvider.GetUtcNow().UtcDateTime;
 
         var updatedEntries = ChangeTracker.Entries()
             .Where(e => e.State == EntityState.Modified);

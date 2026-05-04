@@ -21,6 +21,7 @@ public sealed class ReturnReminderJob : ILibraryJob
     private readonly EmailTemplateRenderer _templateRenderer;
     private readonly JobSettings _jobSettings;
     private readonly EmailTemplateSettings _templateSettings;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<ReturnReminderJob> _logger;
 
     public ReturnReminderJob(
@@ -29,6 +30,7 @@ public sealed class ReturnReminderJob : ILibraryJob
         EmailTemplateRenderer templateRenderer,
         IOptions<JobSettings> jobSettingsOptions,
         IOptions<EmailTemplateSettings> templateSettingsOptions,
+        TimeProvider timeProvider,
         ILogger<ReturnReminderJob> logger)
     {
         _dbContext = dbContext;
@@ -36,6 +38,7 @@ public sealed class ReturnReminderJob : ILibraryJob
         _templateRenderer = templateRenderer;
         _jobSettings = jobSettingsOptions.Value;
         _templateSettings = templateSettingsOptions.Value;
+        _timeProvider = timeProvider;
         _logger = logger;
     }
 
@@ -52,8 +55,9 @@ public sealed class ReturnReminderJob : ILibraryJob
     private async Task ExecuteCoreAsync(CancellationToken cancellationToken)
     {
         var template = _templateSettings.ReturnReminder;
-        var dueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(template.DaysBeforeDueDate));
-        var duplicateCutoff = DateTime.UtcNow.AddHours(-24);
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        var dueDate = DateOnly.FromDateTime(utcNow.AddDays(template.DaysBeforeDueDate));
+        var duplicateCutoff = utcNow.AddHours(-24);
 
         var candidates = await (
             from borrow in _dbContext.Set<BookBorrowEntity>().AsNoTracking()
@@ -109,7 +113,11 @@ public sealed class ReturnReminderJob : ILibraryJob
             if (string.IsNullOrWhiteSpace(candidate.ReaderEmail))
             {
                 failureCount++;
-                notificationLogs.Add(CreateNotificationLog(candidate, false, "У читателя не указан email"));
+                notificationLogs.Add(CreateNotificationLog(
+                    candidate,
+                    false,
+                    "У читателя не указан email",
+                    _timeProvider.GetUtcNow().UtcDateTime));
                 continue;
             }
 
@@ -150,7 +158,11 @@ public sealed class ReturnReminderJob : ILibraryJob
                 failureCount++;
             }
 
-            notificationLogs.Add(CreateNotificationLog(candidate, sendResult.Success, sendResult.ErrorMessage));
+            notificationLogs.Add(CreateNotificationLog(
+                candidate,
+                sendResult.Success,
+                sendResult.ErrorMessage,
+                _timeProvider.GetUtcNow().UtcDateTime));
         }
 
         if (notificationLogs.Count > 0)
@@ -170,7 +182,8 @@ public sealed class ReturnReminderJob : ILibraryJob
     private static NotificationLogEntity CreateNotificationLog(
         ReminderCandidate candidate,
         bool success,
-        string errorMessage)
+        string errorMessage,
+        DateTime sentAt)
     {
         return new NotificationLogEntity
         {
@@ -179,7 +192,7 @@ public sealed class ReturnReminderJob : ILibraryJob
             BookId = candidate.BookId,
             BorrowId = candidate.BorrowId,
             ReceiverEmail = candidate.ReaderEmail,
-            SentAt = DateTime.UtcNow,
+            SentAt = sentAt,
             IsSuccess = success,
             ErrorMessage = errorMessage
         };

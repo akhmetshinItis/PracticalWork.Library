@@ -23,6 +23,7 @@ public class ReportService: IReportService
     private readonly ICacheVersionService _cacheVersionService;
     private readonly MinioOptions _minioOptions;
     private readonly BooksCacheOptions _cacheOptions;
+    private readonly TimeProvider _timeProvider;
     
     public ReportService(IActivityLogRepository activityLogRepository,
         IReportRepository reportRepository,
@@ -31,7 +32,8 @@ public class ReportService: IReportService
         IMinioService minioService,
         IOptionsMonitor<MinioOptions> minioOptions,
         ICacheVersionService cacheVersionService, 
-        IOptionsMonitor<BooksCacheOptions> cacheOptions)
+        IOptionsMonitor<BooksCacheOptions> cacheOptions,
+        TimeProvider timeProvider)
     {
         _activityLogRepository = activityLogRepository;
         _reportRepository = reportRepository;
@@ -41,6 +43,7 @@ public class ReportService: IReportService
         _minioOptions = minioOptions.CurrentValue;
         _cacheVersionService = cacheVersionService;
         _cacheOptions = cacheOptions.CurrentValue;
+        _timeProvider = timeProvider;
     }
 
     public async Task WriteSystemActivityLogs(ActivityLog log)
@@ -117,7 +120,7 @@ public class ReportService: IReportService
     public async Task<string> GetReportUrl(string reportName)
     {
         var (id,report) = await _reportRepository.GetReportByName(reportName);
-        var generatedDate = report.GeneratedAt ?? DateTime.UtcNow;
+        var generatedDate = report.GeneratedAt ?? _timeProvider.GetUtcNow().UtcDateTime;
         var fileName = $"{generatedDate.Year}/{generatedDate.Month}/{reportName}";
         var filePath = await _minioService.GetFileUrlAsync(
             _minioOptions.ReportsBucketName, fileName);

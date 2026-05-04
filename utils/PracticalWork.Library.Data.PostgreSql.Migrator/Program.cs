@@ -52,6 +52,7 @@ public class Program
                 builder.AddConfiguration(Configuration.GetSection("Logging"));
                 builder.ClearProviders();
             })
+            .AddSingleton(TimeProvider.System)
             .AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration["App:AppDbContext"],
                 sqlServerOptions => sqlServerOptions.CommandTimeout(Configuration.GetValue<int>("App:MigrationTimeoutInSeconds"))))
             .AddDbContext<ReportsDbContext>(options => options.UseNpgsql(Configuration["App:ReportsDbContext"],

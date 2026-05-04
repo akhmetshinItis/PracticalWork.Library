@@ -31,6 +31,8 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddSingleton(TimeProvider.System);
+
         services.AddReportsPostgreSqlStorage(cfg =>
         {
             var connectionString = Configuration

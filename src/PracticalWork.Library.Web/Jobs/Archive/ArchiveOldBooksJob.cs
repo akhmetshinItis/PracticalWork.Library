@@ -17,6 +17,7 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
     private readonly IBookService _bookService;
     private readonly JobSettings _jobSettings;
     private readonly ArchiveSettings _archiveSettings;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<ArchiveOldBooksJob> _logger;
 
     public ArchiveOldBooksJob(
@@ -24,12 +25,14 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
         IBookService bookService,
         IOptions<JobSettings> jobSettingsOptions,
         IOptions<ArchiveSettings> archiveSettingsOptions,
+        TimeProvider timeProvider,
         ILogger<ArchiveOldBooksJob> logger)
     {
         _bookArchiveRepository = bookArchiveRepository;
         _bookService = bookService;
         _jobSettings = jobSettingsOptions.Value;
         _archiveSettings = archiveSettingsOptions.Value;
+        _timeProvider = timeProvider;
         _logger = logger;
     }
 
@@ -45,7 +48,8 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
 
     private async Task ExecuteCoreAsync(CancellationToken cancellationToken)
     {
-        var thresholdDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddYears(-_archiveSettings.YearsWithoutBorrow));
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        var thresholdDate = DateOnly.FromDateTime(utcNow.Date.AddYears(-_archiveSettings.YearsWithoutBorrow));
         var maxBooks = Math.Max(1, _archiveSettings.MaxBooksPerRun);
 
         var candidates = await _bookArchiveRepository.GetArchiveCandidates(
@@ -60,7 +64,7 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
         }
 
         var runId = Guid.NewGuid();
-        var startTime = DateTime.UtcNow;
+        var startTime = utcNow;
         var archivedCount = 0;
         var skippedCount = 0;
         var failedCount = 0;
@@ -76,14 +80,15 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
                     runId,
                     candidate,
                     "skipped",
-                    $"Текущий статус книги '{candidate.BookStatus}', ожидался '{BookStatus.Available}'"));
+                    $"Текущий статус книги '{candidate.BookStatus}', ожидался '{BookStatus.Available}'",
+                    _timeProvider.GetUtcNow().UtcDateTime));
                 continue;
             }
 
             if (candidate.HasActiveBorrow)
             {
                 skippedCount++;
-                logs.Add(CreateBookLog(runId, candidate, "skipped", "Книга выдана читателю"));
+                logs.Add(CreateBookLog(runId, candidate, "skipped", "Книга выдана читателю", _timeProvider.GetUtcNow().UtcDateTime));
                 continue;
             }
 
@@ -92,7 +97,7 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
             if (hasActiveBorrow)
             {
                 skippedCount++;
-                logs.Add(CreateBookLog(runId, candidate, "skipped", "Книга выдана читателю на момент обработки"));
+                logs.Add(CreateBookLog(runId, candidate, "skipped", "Книга выдана читателю на момент обработки", _timeProvider.GetUtcNow().UtcDateTime));
                 continue;
             }
 
@@ -100,16 +105,17 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
             {
                 await _bookService.ArchiveBook(candidate.BookId);
                 archivedCount++;
-                logs.Add(CreateBookLog(runId, candidate, "archived", null));
+                logs.Add(CreateBookLog(runId, candidate, "archived", null, _timeProvider.GetUtcNow().UtcDateTime));
             }
             catch (Exception exception)
             {
                 failedCount++;
-                logs.Add(CreateBookLog(runId, candidate, "failed", exception.Message));
+                logs.Add(CreateBookLog(runId, candidate, "failed", exception.Message, _timeProvider.GetUtcNow().UtcDateTime));
             }
         }
 
-        var duration = DateTime.UtcNow - startTime;
+        var completedAt = _timeProvider.GetUtcNow().UtcDateTime;
+        var duration = completedAt - startTime;
 
         logs.Add(new ArchiveBookLogEntry
         {
@@ -118,7 +124,7 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
             BookTitle = null,
             Status = "summary",
             Reason = $"processed={candidates.Count}; archived={archivedCount}; skipped={skippedCount}; failed={failedCount}; durationMs={duration.TotalMilliseconds:F0}",
-            ProcessedAt = DateTime.UtcNow
+            ProcessedAt = completedAt
         });
 
         await _bookArchiveRepository.AddArchiveLogs(logs, cancellationToken);
@@ -137,7 +143,8 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
         Guid runId,
         ArchiveBookCandidate candidate,
         string status,
-        string reason)
+        string reason,
+        DateTime processedAt)
     {
         return new ArchiveBookLogEntry
         {
@@ -146,7 +153,7 @@ public sealed class ArchiveOldBooksJob : ILibraryJob
             BookTitle = candidate.BookTitle,
             Status = status,
             Reason = reason,
-            ProcessedAt = DateTime.UtcNow
+            ProcessedAt = processedAt
         };
     }
 }

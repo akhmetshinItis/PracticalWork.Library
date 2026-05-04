@@ -12,13 +12,17 @@ namespace PracticalWork.Library.Data.PostgreSql.Repositories;
 public class ReaderRepository: IReaderRepository
 {
     private readonly AppDbContext _appDbContext;
-    public ReaderRepository(AppDbContext context)
+    private readonly TimeProvider _timeProvider;
+
+    public ReaderRepository(AppDbContext context, TimeProvider timeProvider)
     {
         _appDbContext = context;
+        _timeProvider = timeProvider;
     }
     /// <inheritdoc />
     public async Task<Guid> CreateReader(Reader reader)
     {
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
         ReaderEntity readerEntity = new()
         {
             FullName = reader.FullName,
@@ -26,8 +30,8 @@ public class ReaderRepository: IReaderRepository
             Email = reader.Email,
             ExpiryDate = reader.ExpiryDate,
             IsActive = reader.IsActive,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = utcNow,
+            UpdatedAt = utcNow
         };
         _appDbContext.Readers.Add(readerEntity);
         await _appDbContext.SaveChangesAsync();

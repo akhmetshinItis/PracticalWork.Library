@@ -9,8 +9,11 @@ namespace PracticalWork.Library.Data.PostgreSql;
 /// </summary>
 public sealed class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    private readonly TimeProvider _timeProvider;
+
+    public AppDbContext(DbContextOptions<AppDbContext> options, TimeProvider timeProvider) : base(options)
     {
+        _timeProvider = timeProvider;
     }
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -36,7 +39,7 @@ public sealed class AppDbContext : DbContext
 
     private void SetUpdateDates()
     {
-        var updateDate = DateTime.UtcNow;
+        var updateDate = _timeProvider.GetUtcNow().UtcDateTime;
 
         var updatedEntries = ChangeTracker.Entries()
             .Where(e => e.State == EntityState.Modified);

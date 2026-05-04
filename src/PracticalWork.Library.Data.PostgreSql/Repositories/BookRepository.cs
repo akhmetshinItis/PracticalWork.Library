@@ -16,14 +16,17 @@ namespace PracticalWork.Library.Data.PostgreSql.Repositories;
 public sealed class BookRepository : IBookRepository
 {
     private readonly AppDbContext _appDbContext;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="appDbContext">Контекст БД</param>
-    public BookRepository(AppDbContext appDbContext)
+    /// <param name="timeProvider">Поставщик времени</param>
+    public BookRepository(AppDbContext appDbContext, TimeProvider timeProvider)
     {
         _appDbContext = appDbContext;
+        _timeProvider = timeProvider;
     }
 
     /// <inheritdoc />
@@ -62,7 +65,7 @@ public sealed class BookRepository : IBookRepository
         bookEntity.Status = book.Status;
         bookEntity.Year = book.Year;
         bookEntity.CoverImagePath = book.CoverImagePath;
-        bookEntity.UpdatedAt = DateTime.UtcNow;
+        bookEntity.UpdatedAt = _timeProvider.GetUtcNow().UtcDateTime;
         
         await _appDbContext.SaveChangesAsync();
     }

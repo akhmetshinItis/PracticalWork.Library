@@ -22,6 +22,7 @@ public sealed class BookService : IBookService
     private readonly IMinioService _minioService;
     private readonly MinioOptions _minioOptions;
     private readonly IMessageProducer _producer;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Конструктор
@@ -33,6 +34,7 @@ public sealed class BookService : IBookService
     /// <param name="cacheOptions">Опции кеша для книг</param>
     /// <param name="minioOptions">опции для минио</param>
     /// <param name="producer">продюсер</param>
+    /// <param name="timeProvider">Поставщик времени</param>
     public BookService(
         IBookRepository bookRepository,
         ICacheService cacheService,
@@ -40,7 +42,8 @@ public sealed class BookService : IBookService
         ICacheVersionService cacheVersionService,
         IOptionsMonitor<BooksCacheOptions> cacheOptions,
         IOptionsMonitor<MinioOptions> minioOptions,
-        IMessageProducer producer)
+        IMessageProducer producer,
+        TimeProvider timeProvider)
     {
         _minioService = minioService;
         _bookRepository = bookRepository;
@@ -49,6 +52,7 @@ public sealed class BookService : IBookService
         _producer = producer;
         _cacheOptions = cacheOptions.CurrentValue;
         _minioOptions = minioOptions.CurrentValue;
+        _timeProvider = timeProvider;
     }
     
     /// <inheritdoc/> 
@@ -101,7 +105,7 @@ public sealed class BookService : IBookService
        {
            Id = id,
            Title = book.Title,
-           ArchivedAt = DateTime.UtcNow
+           ArchivedAt = _timeProvider.GetUtcNow().UtcDateTime
        };
        var message = new BookArchivedEvent(id, book.Title, 
            "Вызван метод архивации книги", response.ArchivedAt);
@@ -170,7 +174,7 @@ public sealed class BookService : IBookService
 
         if (book.IsArchived)
             throw new BookServiceException("Нельзя изменить архивную книгу");
-        var currentDate = DateTime.UtcNow;
+        var currentDate = _timeProvider.GetUtcNow().UtcDateTime;
         var fileName = $"book-covers/{currentDate.Year}/{currentDate.Month}/{id}.";
 
         if (coverFile?.HasFile == true)

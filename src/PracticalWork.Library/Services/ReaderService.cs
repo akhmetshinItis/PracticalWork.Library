@@ -12,11 +12,14 @@ public class ReaderService: IReaderService
 {
     private readonly IReaderRepository _readerRepository;
     private readonly IMessageProducer _producer;
+    private readonly TimeProvider _timeProvider;
     public ReaderService(IReaderRepository repository,
-        IMessageProducer producer)
+        IMessageProducer producer,
+        TimeProvider timeProvider)
     {
         _readerRepository = repository;
         _producer = producer;
+        _timeProvider = timeProvider;
     }
     public async Task<Guid> CreateReader(Reader reader)
     {
@@ -26,8 +29,9 @@ public class ReaderService: IReaderService
         }
         reader.IsActive = true;
         var id = await _readerRepository.CreateReader(reader);
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
         var message = new ReaderCreatedEvent(id, reader.FullName,
-            reader.PhoneNumber, reader.ExpiryDate, DateTime.UtcNow);
+            reader.PhoneNumber, reader.ExpiryDate, utcNow);
         await _producer.ProduceReaderCreateAsync(message);
         return id;
     }
@@ -57,10 +61,11 @@ public class ReaderService: IReaderService
             return (true, readerWithBorrowBooks.BorrowBooks);
         }
         readerWithBorrowBooks.IsActive = false;
-        readerWithBorrowBooks.ExpiryDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        readerWithBorrowBooks.ExpiryDate = DateOnly.FromDateTime(utcNow);
         await _readerRepository.UpdateReader(id, readerWithBorrowBooks);
         var message = new ReaderClosedEvent(id, readerWithBorrowBooks.FullName,
-            DateTime.UtcNow, "Вызван метод закрытия карточки");
+            utcNow, "Вызван метод закрытия карточки");
         await _producer.ProduceReaderCloseAsync(message);
         return (false, readerWithBorrowBooks.BorrowBooks);
     }
