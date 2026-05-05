@@ -1,9 +1,10 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PracticalWork.Library.Abstractions.Services;
+using PracticalWork.Library.Jobs.Common;
 using PracticalWork.Library.Options;
-using PracticalWork.Library.Web.Jobs.Common;
 
-namespace PracticalWork.Library.Web.Jobs.Notifications;
+namespace PracticalWork.Library.Jobs.Notifications;
 
 /// <summary>
 /// Ежедневная задача отправки напоминаний о возврате книг.

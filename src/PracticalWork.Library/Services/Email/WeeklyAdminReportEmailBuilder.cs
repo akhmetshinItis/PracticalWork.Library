@@ -3,7 +3,7 @@ using PracticalWork.Library.Models.NotificationModels;
 using PracticalWork.Library.Models.ReportModels;
 using PracticalWork.Library.Options;
 
-namespace PracticalWork.Library.Web.Services.Email;
+namespace PracticalWork.Library.Services.Email;
 
 /// <summary>
 /// Сборщик email для еженедельного административного отчета.

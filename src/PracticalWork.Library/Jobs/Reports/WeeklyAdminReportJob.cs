@@ -1,10 +1,11 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PracticalWork.Library.Abstractions.Services;
-using PracticalWork.Library.Options;
+using PracticalWork.Library.Jobs.Common;
 using PracticalWork.Library.Models.ReportModels;
-using PracticalWork.Library.Web.Jobs.Common;
+using PracticalWork.Library.Options;
 
-namespace PracticalWork.Library.Web.Jobs.Reports;
+namespace PracticalWork.Library.Jobs.Reports;
 
 /// <summary>
 /// Еженедельный отчет для администрации библиотеки.

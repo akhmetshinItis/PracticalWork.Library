@@ -1,26 +1,19 @@
 using System.Text;
 
-namespace PracticalWork.Library.Web.Services.Email;
+namespace PracticalWork.Library.Services.Email;
 
 /// <summary>
 /// Рендер шаблонов email из файлов resources.
 /// </summary>
 public sealed class EmailTemplateRenderer
 {
-    private readonly IWebHostEnvironment _environment;
-
-    public EmailTemplateRenderer(IWebHostEnvironment environment)
-    {
-        _environment = environment;
-    }
-
     public async Task<string> RenderAsync(
         string templateFileName,
         IReadOnlyDictionary<string, string> placeholders,
         CancellationToken cancellationToken = default)
     {
         var templatePath = Path.Combine(
-            _environment.ContentRootPath,
+            AppContext.BaseDirectory,
             "resources",
             "email",
             templateFileName);

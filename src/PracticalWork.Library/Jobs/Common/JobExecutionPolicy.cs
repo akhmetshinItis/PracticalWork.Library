@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using PracticalWork.Library.Options;
 
-namespace PracticalWork.Library.Web.Jobs.Common;
+namespace PracticalWork.Library.Jobs.Common;
 
 /// <summary>
 /// Общая политика выполнения джоб: таймаут + retry.

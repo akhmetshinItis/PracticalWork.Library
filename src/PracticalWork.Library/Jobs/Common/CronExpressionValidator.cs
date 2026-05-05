@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace PracticalWork.Library.Web.Jobs.Common;
+namespace PracticalWork.Library.Jobs.Common;
 
 /// <summary>
 /// Базовая проверка корректности cron-выражения (5 полей).

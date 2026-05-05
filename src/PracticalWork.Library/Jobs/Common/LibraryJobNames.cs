@@ -1,4 +1,4 @@
-namespace PracticalWork.Library.Web.Jobs.Common;
+namespace PracticalWork.Library.Jobs.Common;
 
 /// <summary>
 /// Имена фоновых задач библиотеки.

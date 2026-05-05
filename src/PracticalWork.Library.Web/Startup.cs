@@ -4,6 +4,10 @@ using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PracticalWork.Library.Cache.Redis;
+using PracticalWork.Library.Jobs.Archive;
+using PracticalWork.Library.Jobs.Common;
+using PracticalWork.Library.Jobs.Notifications;
+using PracticalWork.Library.Jobs.Reports;
 using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Controllers;
 using PracticalWork.Library.Data.Minio;
@@ -14,11 +18,7 @@ using PracticalWork.Library.Web.Configuration;
 using System.Text.Json.Serialization;
 using PracticalWork.Library.Data.Reports.PostgreSql;
 using PracticalWork.Library.MessageBroker;
-using PracticalWork.Library.Web.Jobs.Archive;
-using PracticalWork.Library.Web.Jobs.Common;
-using PracticalWork.Library.Web.Jobs.Notifications;
-using PracticalWork.Library.Web.Jobs.Reports;
-using PracticalWork.Library.Web.Services.Email;
+using PracticalWork.Library.Services.Email;
 
 namespace PracticalWork.Library.Web;
 

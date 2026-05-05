@@ -1,12 +1,13 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Models.NotificationModels;
 using PracticalWork.Library.Options;
 
-namespace PracticalWork.Library.Web.Services.Email;
+namespace PracticalWork.Library.Services.Email;
 
 /// <inheritdoc />
 public sealed class MailKitEmailService : IEmailService

@@ -1,11 +1,13 @@
 using Hangfire;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PracticalWork.Library.Options;
-using PracticalWork.Library.Web.Jobs.Archive;
-using PracticalWork.Library.Web.Jobs.Notifications;
-using PracticalWork.Library.Web.Jobs.Reports;
+using PracticalWork.Library.Jobs.Archive;
+using PracticalWork.Library.Jobs.Notifications;
+using PracticalWork.Library.Jobs.Reports;
 
-namespace PracticalWork.Library.Web.Jobs.Common;
+namespace PracticalWork.Library.Jobs.Common;
 
 /// <summary>
 /// Регистрирует recurring-задачи Hangfire при запуске приложения.
@@ -32,17 +34,29 @@ public sealed class HangfireRecurringJobsHostedService : IHostedService
         RecurringJob.AddOrUpdate<ReturnReminderJob>(
             LibraryJobNames.ReturnReminder,
             job => job.ExecuteAsync(CancellationToken.None),
-            _jobSettings.Jobs[LibraryJobNames.ReturnReminder].CronExpression);
+            _jobSettings.Jobs[LibraryJobNames.ReturnReminder].CronExpression,
+            new RecurringJobOptions
+            {
+                TimeZone = timeZone
+            });
 
         RecurringJob.AddOrUpdate<WeeklyAdminReportJob>(
             LibraryJobNames.WeeklyAdminReport,
             job => job.ExecuteAsync(CancellationToken.None),
-            _jobSettings.Jobs[LibraryJobNames.WeeklyAdminReport].CronExpression);
+            _jobSettings.Jobs[LibraryJobNames.WeeklyAdminReport].CronExpression,
+            new RecurringJobOptions
+            {
+                TimeZone = timeZone
+            });
 
         RecurringJob.AddOrUpdate<ArchiveOldBooksJob>(
             LibraryJobNames.ArchiveOldBooks,
             job => job.ExecuteAsync(CancellationToken.None),
-            _jobSettings.Jobs[LibraryJobNames.ArchiveOldBooks].CronExpression);
+            _jobSettings.Jobs[LibraryJobNames.ArchiveOldBooks].CronExpression,
+            new RecurringJobOptions
+            {
+                TimeZone = timeZone
+            });
 
         _logger.LogInformation("Hangfire recurring jobs configured for timezone {TimeZone}", _jobSettings.TimeZoneId);
         return Task.CompletedTask;

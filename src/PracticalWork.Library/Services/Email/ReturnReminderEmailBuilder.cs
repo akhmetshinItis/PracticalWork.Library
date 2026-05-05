@@ -2,7 +2,7 @@ using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Models.NotificationModels;
 using PracticalWork.Library.Options;
 
-namespace PracticalWork.Library.Web.Services.Email;
+namespace PracticalWork.Library.Services.Email;
 
 /// <summary>
 /// Сборщик email для напоминания о возврате книги.

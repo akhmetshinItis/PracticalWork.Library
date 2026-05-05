@@ -4,7 +4,7 @@ using PracticalWork.Library.Abstractions.Services;
 using PracticalWork.Library.Models.JobModels;
 using PracticalWork.Library.Options;
 
-namespace PracticalWork.Library.Web.Jobs.Common;
+namespace PracticalWork.Library.Jobs.Common;
 
 /// <summary>
 /// Сервис управления задачами Hangfire.
