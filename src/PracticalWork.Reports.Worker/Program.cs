@@ -16,7 +16,8 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services
-    .AddMessageBroker(builder.Configuration);
+    .AddMessageBroker(builder.Configuration)
+    .AddConsumers();
 
 builder.Services.AddMinioFileStorage(builder.Configuration);
 builder.Services.AddCache(builder.Configuration);

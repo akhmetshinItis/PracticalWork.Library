@@ -1,7 +1,5 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using PracticalWork.Library.Abstractions.MessageBroker;
-using PracticalWork.Library.Abstractions.Services;
+using PracticalWork.Library.Abstractions.Storage;
 using PracticalWork.Library.Events;
 using PracticalWork.Library.Models.ReportModels;
 
@@ -10,18 +8,15 @@ namespace PracticalWork.Library.MessageBroker.Handlers
     /// <inheritdoc />
     public class LibraryEventHandler : IMessageHandler<BaseLibraryEvent>
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IActivityLogRepository _activityLogRepository;
 
-        public LibraryEventHandler(IServiceProvider serviceProvider)
+        public LibraryEventHandler(IActivityLogRepository activityLogRepository)
         {
-            _serviceProvider = serviceProvider;
+            _activityLogRepository = activityLogRepository;
         }
 
         public async Task HandleAsync(BaseLibraryEvent libraryEvent, CancellationToken cancellationToken)
         {
-            using var scope = _serviceProvider.CreateScope();
-            var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
-
             var log = new ActivityLog
             {
                 Event = libraryEvent,
@@ -29,7 +24,7 @@ namespace PracticalWork.Library.MessageBroker.Handlers
                 EventType = libraryEvent.EventType
             };
 
-            await reportService.WriteSystemActivityLogs(log);
+            await _activityLogRepository.AddLogAsync(log);
         }
     }
 

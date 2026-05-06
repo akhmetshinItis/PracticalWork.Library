@@ -32,8 +32,7 @@ docker-compose run --rm migrator
 ## Сервисы приложения
 - Library Web API: `src/PracticalWork.Library.Web` (ASP.NET Core 8).
 - Reports Web API: `src/PracticalWork.Reports.Web` (ASP.NET Core 8).
-- Library Worker: `src/PracticalWork.Consumer.Worker` (обработка событий библиотеки).
-- Reports Worker: `src/PracticalWork.Reports.Worker` (генерация отчетов).
+- Reports Worker: `src/PracticalWork.Reports.Worker` (обработка событий библиотеки и генерация отчетов).
 - Migrator: `utils/PracticalWork.Library.Data.PostgreSql.Migrator` (миграции двух БД).
 
 ## Инфраструктура
@@ -53,14 +52,13 @@ docker-compose run --rm migrator
 - `src/PracticalWork.Library.Cache.Redis` — кэширование.
 - `src/PracticalWork.Library.Data.Minio` — MinIO интеграция.
 - `src/PracticalWork.Library.MessageBroker` — RabbitMQ интеграция.
-- `src/PracticalWork.Consumer.Worker` — worker библиотеки.
 - `src/PracticalWork.Reports.Worker` — worker отчетов.
 - `utils/PracticalWork.Library.Data.PostgreSql.Migrator` — мигратор.
 
 ## Архитектура и потоки
 1. **Доменные события (Library)**
    - Сервисы книг, читателей и выдачи публикуют события.
-   - Library Worker подписывается на события и пишет `ActivityLog` в reports БД.
+   - Reports Worker подписывается на события и пишет `ActivityLog` в reports БД.
 2. **Генерация отчетов (Reports)**
    - Reports API создает запись отчета и публикует `ReportCreateEvent`.
    - Reports Worker формирует CSV, сохраняет в MinIO, обновляет статус отчета и сбрасывает кэш.
